@@ -6,33 +6,34 @@ White-label, multi-tenant fintech super app backend. `docs/backend-spec.md` is t
 
 - Use the spec's table names, columns, types, keys, endpoint paths, methods, auth levels, error codes, Kafka topics, socket events, gRPC RPC names, Temporal workflow names, BullMQ queue names and Redis key patterns exactly as written.
 - Do not invent columns, endpoints, codes, events or topics, and do not rename them.
+- docs/decisions.md is binding and overrides ambiguities in the spec.
 - If the spec is missing something, is ambiguous or contradicts itself, stop and ask. Do not guess. Add it to `docs/questions.md`, and record each answer in `docs/decisions.md`.
 
 ## Stack (spec §1)
 
-| Concern                        | Choice                                                                                                                           |
-| ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
-| Language                       | TypeScript on Node.js active LTS for every service                                                                               |
-| Go                             | Only for `ledger-service` (posting) and `cards-service/cards-auth` (card authorization). Nowhere else                            |
-| API framework                  | NestJS on the Fastify adapter                                                                                                    |
-| Internal RPC                   | gRPC, protobuf in `libs/proto`, linted and breaking-checked with buf                                                             |
-| Database                       | PostgreSQL with PostGIS, pgcrypto, pg_partman; PgBouncer in transaction mode                                                     |
-| Data access                    | Prisma for CRUD services; Kysely for reporting and heavy queries; Go data access for the ledger is open (`docs/questions.md` Q4) |
-| Migrations                     | Prisma Migrate (TS), golang-migrate (Go); expand-and-contract only                                                               |
-| Cache, locks, rate limits, GEO | Redis (cluster mode)                                                                                                             |
-| Events                         | Kafka + Schema Registry (Avro, backward compatible); Debezium publishes outboxes                                                 |
-| Long money workflows           | Temporal                                                                                                                         |
-| Short background jobs          | BullMQ on Redis                                                                                                                  |
-| Realtime                       | Socket.IO on `realtime-gateway` with the Redis adapter                                                                           |
-| Monorepo                       | Nx with pnpm                                                                                                                     |
-| Tests                          | Vitest, `go test`, Testcontainers, fast-check / Go fuzzing, Pact, k6                                                             |
-| Contracts                      | OpenAPI 3.1 for REST, AsyncAPI 3 for Kafka and sockets                                                                           |
-| Search                         | OpenSearch                                                                                                                       |
-| Analytics                      | ClickHouse, fed by Debezium CDC                                                                                                  |
-| Object storage                 | S3-compatible with SSE-KMS (RustFS locally)                                                                                      |
-| Secrets and keys               | HashiCorp Vault + cloud KMS                                                                                                      |
-| API gateway                    | Kong                                                                                                                             |
-| Staff identity                 | Keycloak (OIDC + TOTP); customers use auth-service                                                                               |
+| Concern                        | Choice                                                                                                                                 |
+| ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
+| Language                       | TypeScript on Node.js active LTS for every service                                                                                     |
+| Go                             | Only for `ledger-service` (posting) and `cards-service/cards-auth` (card authorization). Nowhere else                                  |
+| API framework                  | NestJS on the Fastify adapter                                                                                                          |
+| Internal RPC                   | gRPC, protobuf in `libs/proto`, linted and breaking-checked with buf                                                                   |
+| Database                       | PostgreSQL with PostGIS, pgcrypto, pg_partman; PgBouncer in transaction mode                                                           |
+| Data access                    | Prisma for CRUD services; Kysely for reporting and heavy queries; Go data access for the ledger is open (`docs/questions.md` Q4)       |
+| Migrations                     | Prisma Migrate (TS), golang-migrate (Go); expand-and-contract only                                                                     |
+| Cache, locks, rate limits, GEO | Redis (cluster mode)                                                                                                                   |
+| Events                         | Kafka + Schema Registry (Avro, backward compatible); outbox relay in `libs/kafka` (decisions Q44); Debezium only for CDC to ClickHouse |
+| Long money workflows           | Temporal                                                                                                                               |
+| Short background jobs          | BullMQ on Redis                                                                                                                        |
+| Realtime                       | Socket.IO on `realtime-gateway` with the Redis adapter                                                                                 |
+| Monorepo                       | Nx with pnpm                                                                                                                           |
+| Tests                          | Vitest, `go test`, Testcontainers, fast-check / Go fuzzing, Pact, k6                                                                   |
+| Contracts                      | OpenAPI 3.1 for REST, AsyncAPI 3 for Kafka and sockets                                                                                 |
+| Search                         | OpenSearch                                                                                                                             |
+| Analytics                      | ClickHouse, fed by Debezium CDC                                                                                                        |
+| Object storage                 | S3-compatible with SSE-KMS (RustFS locally)                                                                                            |
+| Secrets and keys               | HashiCorp Vault + cloud KMS                                                                                                            |
+| API gateway                    | Kong                                                                                                                                   |
+| Staff identity                 | Keycloak (OIDC + TOTP); customers use auth-service                                                                                     |
 
 Do not add a framework, ORM, queue, broker or datastore that is not in this table.
 
@@ -45,7 +46,8 @@ Do not add a framework, ORM, queue, broker or datastore that is not in this tabl
 ## Multi-tenancy (non-negotiable)
 
 - `tenant_id` is on every table, request, gRPC call (`tenant-id` metadata), Kafka message (key `tenantId:ownerId`), outbox event, Temporal workflow (search attribute), BullMQ job, cache key (`t:{tid}:...`), socket room (`t:{tid}:...`), log line and trace span.
-- Row-level security is enabled on every tenant-scoped table with `USING (tenant_id = current_setting('app.tenant_id')::uuid)`. The DB helper runs `SET LOCAL app.tenant_id` at the start of every transaction. No query runs outside a tenant-scoped transaction unless it is a documented global table.
+- Every table except the global ones (`tenancy.tenants`, `admin.permissions`, `risk.sanctions_lists`, `risk.sanctions_entries`) has `ENABLE` and `FORCE ROW LEVEL SECURITY` using `current_setting('app.tenant_id', true)`, failing closed when it is unset. Service roles never own tables and never have `BYPASSRLS`. The DB helper runs `SET LOCAL app.tenant_id` at the start of every transaction (decisions Q1).
+- Cross-tenant jobs loop over `TenantService.ListActiveTenants`, one tenant per transaction. Only the migration runner, Debezium CDC and a non-Debezium outbox relay may use a `BYPASSRLS` role.
 - `tenant_id` is the first column of every composite index.
 - No per-tenant code branches. Tenant differences come only from tenant profile config, feature flags and adapters resolved through `TenantService.ResolveAdapter`.
 - Every service's integration tests prove RLS isolation between two tenants.
@@ -57,7 +59,8 @@ Do not add a framework, ORM, queue, broker or datastore that is not in this tabl
 - `jsonb` only for configuration and provider payloads, never for filtered fields.
 - PII is encrypted at the application layer into `*_enc bytea` with a `*_hash` column (HMAC-SHA256, per-tenant key). Never log PII; logs are PII-masked.
 - Soft delete (`deleted_at`) only on master data; never on money tables.
-- Every service schema has `outbox_events`, `idempotency_keys` and `inbox_events` exactly as in spec §3.
+- Every service schema has `outbox_events`, `idempotency_keys` and `inbox_events` as in spec §3, extended by decisions Q7 and Q12. They are not partitioned.
+- Partitioned tables use `PRIMARY KEY (id, created_at)`; uniqueness that must hold across partitions lives in a non-partitioned key table written through `insertWithKey` (decisions Q2).
 - Service DB roles get only `SELECT/INSERT/UPDATE` on their own schema; append-only tables deny `UPDATE/DELETE`.
 
 ## Money
@@ -69,9 +72,10 @@ Do not add a framework, ORM, queue, broker or datastore that is not in this tabl
 
 ## Idempotency and events
 
-- `Idempotency-Key` (client UUID) is required on every POST that moves money or creates a resource. Replays return the stored response for 24 h, using `idempotency_keys` plus the `t:{tid}:idem:{key}` Redis lock.
+- `Idempotency-Key` is required on every POST that moves money or holds funds and on every maker-checker execution, and honoured when sent on other POSTs. Replay, conflict and retention rules are in decisions Q12.
 - gRPC calls are retried only when idempotent or carrying an idempotency key. Temporal activities always pass idempotency keys.
-- Events are published only through the transactional outbox (`outbox_events` written in the same transaction as the state change, relayed by Debezium). Never publish to Kafka directly from request handlers.
+- Events are published only through the transactional outbox: `outbox_events` is written in the same transaction as the state change, with an explicit `topic` (from spec §15) and `message_key` (`<tenantId>:<ownerId>`) (decisions Q7). Never publish to Kafka directly from request handlers.
+- Event types are `<aggregate>.<past_tense_verb>` and must be listed in `docs/events.md` (decisions Q38).
 - Consumers are idempotent through `inbox_events`. Every topic has `.retry.1m`, `.retry.10m` and `.dlq`.
 
 ## API conventions (spec §9)

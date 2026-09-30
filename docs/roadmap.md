@@ -55,13 +55,13 @@ Conventions:
 - **Done:** `libs/common` (tenant context, money, UUIDv7, cursor pagination, error model and codes, locale, logger, PII crypto) and `libs/nest` (Fastify bootstrap, exception filter, tenant-context hook, OpenTelemetry). The M1 health and gRPC runtime was added to `libs/nest`.
 - **Remaining:**
   - `libs/common`: header parsing for `X-Device-Id`, `X-App-Version` and `X-Platform`.
-  - `libs/db`: Prisma and Kysely helpers with `SET LOCAL app.tenant_id`; RLS and standard-column SQL templates; the Std tables as a reusable migration; outbox writer; idempotency interceptor using `t:{tid}:idem:{key}` (Q1, Q2, Q7, Q12).
-  - `libs/kafka`: event envelope (`eventId, tenantId, type, version, occurredAt, producer, traceId, subject, data`); idempotent producer with Avro and Schema Registry; consumer with inbox dedupe, `.retry.1m`, `.retry.10m` and `.dlq`; key `tenantId:ownerId` (Q6, Q7, Q38).
+  - `libs/db`: Prisma and Kysely helpers with `SET LOCAL app.tenant_id`; `ENABLE`/`FORCE` RLS templates failing closed and the standard columns; the Std tables (unpartitioned, with `topic`/`message_key` on the outbox and the actor on idempotency keys) plus their daily purge job; `insertWithKey` for cross-partition uniqueness; outbox writer; idempotency interceptor per decisions Q12 (Q1, Q2, Q7, Q12 decided; Q39–Q41, Q45, Q46 open).
+  - `libs/kafka`: §15 topic list constant; event envelope; Avro and Schema Registry with `TopicRecordNameStrategy`; polling outbox relay (`FOR UPDATE SKIP LOCKED`, batch of 500) and Debezium Outbox Event Router config; consumer with inbox dedupe, `.retry.1m`, `.retry.10m` and `.dlq`; key `tenantId:ownerId` (Q7, Q38 decided; Q43, Q44, Q47 open; event types wait for `docs/events.md` approval).
   - `libs/auth`: EdDSA JWT verification (`tid, sub, dev, typ`); guards Public, Reg, User, Step-up, Staff, Rider, Key and Admin:perm; step-up check bound to the request hash; merchant HMAC signature verifier with 5-minute skew.
   - `libs/proto`: `.proto` files for every service and RPC in §13; tenant-id, request-id and traceparent interceptors; default deadlines of 2 s, and 300 ms for ledger and risk.
   - `libs/temporal`: client factory, worker bootstrap, `tenantId` search attribute, activity helper with idempotency keys.
   - `libs/testing`: Testcontainers fixtures for Postgres, Redis, Kafka and Temporal; factories; a two-tenant helper.
-- **Done when:** every lib has unit tests; integration tests prove RLS blocks tenant B from tenant A's rows, outbox writes are atomic, idempotent replay returns the same response, and consumers dedupe duplicate events.
+- **Done when:** every lib has unit tests; integration tests prove RLS blocks tenant B from tenant A's rows and fails closed without `app.tenant_id`, no service runtime role has `BYPASSRLS`, outbox writes are atomic, `insertWithKey` returns the existing row on conflict, idempotent replay returns the same response (and 409s per Q12), and consumers dedupe duplicate events.
 
 ## M3. tenant-service and adapter framework
 
