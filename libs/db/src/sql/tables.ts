@@ -79,12 +79,15 @@ export function monthlyPartitionSql(schema: string, table: string, premake = 4):
   if (!Number.isInteger(premake) || premake < 1 || premake > 24) {
     throw new RangeError('premake must be between 1 and 24');
   }
+  const parent = qualified(schema, table);
   return `SELECT partman.create_parent(
-  p_parent_table => '${qualified(schema, table)}',
+  p_parent_table => '${parent}',
   p_control => 'created_at',
   p_interval => '1 month',
   p_premake => ${String(premake)}
-);`;
+);
+UPDATE partman.part_config SET inherit_privileges = true WHERE parent_table = '${parent}';
+SELECT partman.reapply_privileges('${parent}');`;
 }
 
 export interface TableDefinition {

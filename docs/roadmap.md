@@ -10,32 +10,32 @@ Conventions:
 
 ## Status
 
-| #   | Milestone                                                   | Status      | Prompt |
-| --- | ----------------------------------------------------------- | ----------- | ------ |
-| M1  | Monorepo and local infrastructure                           | DONE        | 1      |
-| M2  | Shared libraries                                            | IN PROGRESS | 2      |
-| M3  | tenant-service and adapter framework                        | TODO        | 3      |
-| M4  | API gateway                                                 | TODO        | 4      |
-| M5  | auth-service                                                | TODO        | 5      |
-| M6  | ledger-service (Go)                                         | TODO        | 6      |
-| M7  | wallet-service                                              | TODO        | 7      |
-| M8  | risk-service                                                | TODO        | 8      |
-| M9  | file-service and kyc-service                                | TODO        | 9      |
-| M10 | platform-service                                            | TODO        | 10     |
-| M11 | payments-service                                            | TODO        | 11     |
-| M12 | banking-service                                             | TODO        | 12     |
-| M13 | bills-service                                               | TODO        | 13     |
-| M14 | notification-service and realtime-gateway                   | TODO        | 14     |
-| M15 | cards-service and cards-auth (Go)                           | TODO        | 15     |
-| M16 | marketplace-service                                         | TODO        | 16     |
-| M17 | delivery-service and payouts-service                        | TODO        | 17     |
-| M18 | Merchant app API, merchant server API and merchant webhooks | TODO        | 18     |
-| M19 | support-service, reporting-service and audit-service        | TODO        | 19     |
-| M20 | admin-bff with RBAC and maker-checker                       | TODO        | 20     |
-| M21 | console-bff and tenant onboarding                           | TODO        | 21     |
-| M22 | Observability, security and load testing                    | TODO        | 22     |
-| M23 | Deployment: Docker, Helm, Terraform, Argo CD, CI/CD         | TODO        | 23     |
-| M24 | End-to-end flows and hardening                              | TODO        | 24     |
+| #   | Milestone                                                   | Status | Prompt |
+| --- | ----------------------------------------------------------- | ------ | ------ |
+| M1  | Monorepo and local infrastructure                           | DONE   | 1      |
+| M2  | Shared libraries                                            | DONE   | 2      |
+| M3  | tenant-service and adapter framework                        | TODO   | 3      |
+| M4  | API gateway                                                 | TODO   | 4      |
+| M5  | auth-service                                                | TODO   | 5      |
+| M6  | ledger-service (Go)                                         | TODO   | 6      |
+| M7  | wallet-service                                              | TODO   | 7      |
+| M8  | risk-service                                                | TODO   | 8      |
+| M9  | file-service and kyc-service                                | TODO   | 9      |
+| M10 | platform-service                                            | TODO   | 10     |
+| M11 | payments-service                                            | TODO   | 11     |
+| M12 | banking-service                                             | TODO   | 12     |
+| M13 | bills-service                                               | TODO   | 13     |
+| M14 | notification-service and realtime-gateway                   | TODO   | 14     |
+| M15 | cards-service and cards-auth (Go)                           | TODO   | 15     |
+| M16 | marketplace-service                                         | TODO   | 16     |
+| M17 | delivery-service and payouts-service                        | TODO   | 17     |
+| M18 | Merchant app API, merchant server API and merchant webhooks | TODO   | 18     |
+| M19 | support-service, reporting-service and audit-service        | TODO   | 19     |
+| M20 | admin-bff with RBAC and maker-checker                       | TODO   | 20     |
+| M21 | console-bff and tenant onboarding                           | TODO   | 21     |
+| M22 | Observability, security and load testing                    | TODO   | 22     |
+| M23 | Deployment: Docker, Helm, Terraform, Argo CD, CI/CD         | TODO   | 23     |
+| M24 | End-to-end flows and hardening                              | TODO   | 24     |
 
 ---
 
@@ -49,19 +49,27 @@ Conventions:
   - Root scripts `dev:up`, `dev:down`, `dev:smoke`, `db:migrate`, `lint`, `test`, `test:integration`; GitHub Actions workflow running all of them.
 - **Tests:** 21 in-process app health tests; Go `server` package and app tests; `dev:smoke` boots all 23 services as processes and checks HTTP, gRPC, metrics and clean SIGTERM shutdown; Postgres image Testcontainers test; every compose service healthy.
 
-## M2. Shared libraries — IN PROGRESS
+## M2. Shared libraries — DONE
 
 - **Spec:** §3, §9, §13, §15, §16.
-- **Done:** `libs/common` (tenant context, money, UUIDv7, cursor pagination, error model and codes, locale, logger, PII crypto) and `libs/nest` (Fastify bootstrap, exception filter, tenant-context hook, OpenTelemetry). The M1 health and gRPC runtime was added to `libs/nest`.
-- **Remaining:**
-  - `libs/common`: header parsing for `X-Device-Id`, `X-App-Version` and `X-Platform`.
-  - `libs/db`: Prisma and Kysely helpers with `SET LOCAL app.tenant_id`; `ENABLE`/`FORCE` RLS templates failing closed and the standard columns; the Std tables (unpartitioned, with `topic`/`message_key` on the outbox and the actor on idempotency keys) plus their daily purge job; `insertWithKey` for cross-partition uniqueness; outbox writer; idempotency interceptor per decisions Q12 (Q1, Q2, Q7, Q12 decided; Q39–Q41, Q45, Q46 open).
-  - `libs/kafka`: §15 topic list constant; event envelope; Avro and Schema Registry with `TopicRecordNameStrategy`; polling outbox relay (`FOR UPDATE SKIP LOCKED`, batch of 500) and Debezium Outbox Event Router config; consumer with inbox dedupe, `.retry.1m`, `.retry.10m` and `.dlq`; key `tenantId:ownerId` (Q7, Q38 decided; Q43, Q44, Q47 open; event types wait for `docs/events.md` approval).
-  - `libs/auth`: EdDSA JWT verification (`tid, sub, dev, typ`); guards Public, Reg, User, Step-up, Staff, Rider, Key and Admin:perm; step-up check bound to the request hash; merchant HMAC signature verifier with 5-minute skew.
-  - `libs/proto`: `.proto` files for every service and RPC in §13; tenant-id, request-id and traceparent interceptors; default deadlines of 2 s, and 300 ms for ledger and risk.
-  - `libs/temporal`: client factory, worker bootstrap, `tenantId` search attribute, activity helper with idempotency keys.
-  - `libs/testing`: Testcontainers fixtures for Postgres, Redis, Kafka and Temporal; factories; a two-tenant helper.
-- **Done when:** every lib has unit tests; integration tests prove RLS blocks tenant B from tenant A's rows and fails closed without `app.tenant_id`, no service runtime role has `BYPASSRLS`, outbox writes are atomic, `insertWithKey` returns the existing row on conflict, idempotent replay returns the same response (and 409s per Q12), and consumers dedupe duplicate events.
+- **Built:**
+  - `libs/common`: tenant and request context with actor, money, UUIDv7, cursor pagination, the error model, locale, logger, PII crypto, client-header parsing, the §15 topic list plus `notify.inbox`, and the auth-level metadata.
+  - `libs/nest`: Fastify bootstrap with raw body, exception filter, tenant hook, health, gRPC health, telemetry, and the idempotency interceptor and decorator.
+  - `libs/db`: SQL builders for roles, forced RLS, standard columns, monthly partitions, key tables and std tables; tenant-scoped Kysely and Prisma transactions; outbox writer; `insertWithKey`; inbox dedupe; purge job; `BYPASSRLS` audit; idempotency store.
+  - `libs/kafka`: event catalog with Avro envelopes (`TopicRecordNameStrategy`); Confluent wire-format serde; polling outbox relay; consumer with inbox dedupe and retry/DLQ routing; topic provisioning.
+  - `libs/auth`: EdDSA JWT sign and verify; guard for Public, Reg, User, Step-up, Staff, Rider, Key and Admin:perm; step-up request hash; merchant HMAC signatures with IP allowlists.
+  - `libs/proto`: 12 services and 48 RPCs from §13 (buf STANDARD lint), generated TS and Go, TS client and server interceptors, deadlines and error mapping; Go interceptors in `libs/go/common/grpcx`.
+  - `libs/temporal`: client, tenant workflows with the `tenantId` search attribute, worker with tenant propagation, activity idempotency keys.
+  - `libs/testing`: Postgres, Redis, Kafka with Schema Registry, and Temporal fixtures; a two-tenant helper and an RLS isolation checker.
+- **Tests:** 249 unit and 159 integration tests. They prove:
+  - RLS isolation on every table kind, failing closed without a tenant
+  - no runtime role has `BYPASSRLS`
+  - atomic outbox writes, and idempotent replay and conflicts per Q12
+  - `insertWithKey` under concurrency, and inbox dedupe
+  - relay publishing and concurrent relays, schema validation and registry compatibility
+  - consumer dedupe and the retry → DLQ path
+  - every auth level, gRPC context, deadlines and errors
+  - Temporal tenant propagation and idempotency keys across retries
 
 ## M3. tenant-service and adapter framework
 

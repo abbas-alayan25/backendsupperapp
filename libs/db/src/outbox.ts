@@ -35,7 +35,7 @@ export class OutboxWriter {
     private readonly producer: string,
   ) {}
 
-  async write(trx: Transaction<unknown>, event: OutboxEvent): Promise<string> {
+  async write<DB>(trx: Transaction<DB>, event: OutboxEvent): Promise<string> {
     if (!isTopic(event.topic)) {
       throw new InvalidOutboxEventError(`unknown topic ${String(event.topic)}`);
     }

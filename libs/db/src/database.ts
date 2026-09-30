@@ -26,8 +26,8 @@ export class InvalidTenantError extends Error {
   }
 }
 
-export async function applyTenantSettings(
-  executor: Transaction<unknown>,
+export async function applyTenantSettings<DB>(
+  executor: Transaction<DB>,
   tenantId: string | null,
   scope: TenantScope = 'tenant',
 ): Promise<void> {
@@ -48,7 +48,7 @@ export function withTenant<DB, T>(
     return Promise.reject(new InvalidTenantError(tenantId));
   }
   return db.transaction().execute(async (trx) => {
-    await applyTenantSettings(trx as Transaction<unknown>, tenantId);
+    await applyTenantSettings(trx, tenantId);
     return fn(trx);
   });
 }
@@ -59,7 +59,7 @@ export function withPlatformScope<DB, T>(
   fn: (trx: Transaction<DB>) => Promise<T>,
 ): Promise<T> {
   return db.transaction().execute(async (trx) => {
-    await applyTenantSettings(trx as Transaction<unknown>, tenantId, 'platform');
+    await applyTenantSettings(trx, tenantId, 'platform');
     return fn(trx);
   });
 }

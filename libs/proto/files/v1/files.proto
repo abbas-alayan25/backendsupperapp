@@ -1,0 +1,73 @@
+syntax = "proto3";
+
+package files.v1;
+
+import "google/protobuf/timestamp.proto";
+
+service FileService {
+  rpc CreateUploadUrl(CreateUploadUrlRequest) returns (CreateUploadUrlResponse);
+  rpc GetDownloadUrl(GetDownloadUrlRequest) returns (GetDownloadUrlResponse);
+  rpc GetFileMeta(GetFileMetaRequest) returns (GetFileMetaResponse);
+}
+
+enum Purpose {
+  PURPOSE_UNSPECIFIED = 0;
+  PURPOSE_KYC = 1;
+  PURPOSE_KYB = 2;
+  PURPOSE_PRODUCT_IMAGE = 3;
+  PURPOSE_DELIVERY_PROOF = 4;
+  PURPOSE_EXPORT = 5;
+  PURPOSE_STATEMENT = 6;
+  PURPOSE_EVIDENCE = 7;
+  PURPOSE_BRAND = 8;
+}
+
+enum ScanStatus {
+  SCAN_STATUS_UNSPECIFIED = 0;
+  SCAN_STATUS_PENDING = 1;
+  SCAN_STATUS_CLEAN = 2;
+  SCAN_STATUS_INFECTED = 3;
+}
+
+message FileMeta {
+  string id = 1;
+  string owner_type = 2;
+  string owner_id = 3;
+  Purpose purpose = 4;
+  string mime = 5;
+  int64 size_bytes = 6;
+  string sha256 = 7;
+  ScanStatus scan_status = 8;
+  google.protobuf.Timestamp created_at = 9;
+}
+
+message CreateUploadUrlRequest {
+  string owner_type = 1;
+  string owner_id = 2;
+  Purpose purpose = 3;
+  string mime = 4;
+  int64 size_bytes = 5;
+}
+
+message CreateUploadUrlResponse {
+  string file_id = 1;
+  string upload_url = 2;
+  google.protobuf.Timestamp expires_at = 3;
+}
+
+message GetDownloadUrlRequest {
+  string file_id = 1;
+}
+
+message GetDownloadUrlResponse {
+  string download_url = 1;
+  google.protobuf.Timestamp expires_at = 2;
+}
+
+message GetFileMetaRequest {
+  string file_id = 1;
+}
+
+message GetFileMetaResponse {
+  FileMeta file = 1;
+}

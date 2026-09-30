@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+package kyc.v1;
+
+import "google/protobuf/timestamp.proto";
+
+service KycService {
+  rpc GetTier(GetTierRequest) returns (GetTierResponse);
+  rpc GetProfile(GetProfileRequest) returns (GetProfileResponse);
+  rpc RequireTier(RequireTierRequest) returns (RequireTierResponse);
+}
+
+enum RiskRating {
+  RISK_RATING_UNSPECIFIED = 0;
+  RISK_RATING_LOW = 1;
+  RISK_RATING_MEDIUM = 2;
+  RISK_RATING_HIGH = 3;
+}
+
+message KycProfile {
+  string user_id = 1;
+  int32 current_tier = 2;
+  string nationality = 3;
+  string occupation = 4;
+  string source_of_funds = 5;
+  bool pep = 6;
+  RiskRating risk_rating = 7;
+  google.protobuf.Timestamp next_review_at = 8;
+}
+
+message GetTierRequest {
+  string user_id = 1;
+}
+
+message GetTierResponse {
+  int32 tier = 1;
+}
+
+message GetProfileRequest {
+  string user_id = 1;
+}
+
+message GetProfileResponse {
+  KycProfile profile = 1;
+}
+
+message RequireTierRequest {
+  string user_id = 1;
+  int32 minimum_tier = 2;
+}
+
+message RequireTierResponse {
+  bool satisfied = 1;
+  int32 current_tier = 2;
+}

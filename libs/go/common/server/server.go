@@ -18,6 +18,8 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health"
 	healthpb "google.golang.org/grpc/health/grpc_health_v1"
+
+	"superapp/libs/go/common/grpcx"
 )
 
 const (
@@ -103,7 +105,7 @@ func NewMetricsHandler() http.Handler {
 }
 
 func NewGRPCServer() (*grpc.Server, *health.Server) {
-	server := grpc.NewServer()
+	server := grpc.NewServer(grpc.ChainUnaryInterceptor(grpcx.UnaryServerInterceptor()))
 	healthServer := health.NewServer()
 	healthServer.SetServingStatus("", healthpb.HealthCheckResponse_SERVING)
 	healthpb.RegisterHealthServer(server, healthServer)

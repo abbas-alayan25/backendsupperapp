@@ -1,3 +1,4 @@
+export * from './free-port.js';
 export * from './kafka.js';
 export * from './postgres.js';
 export * from './redis.js';

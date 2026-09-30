@@ -6,6 +6,10 @@ import { GenericContainer } from 'testcontainers';
 export const POSTGRES_TEST_IMAGE = 'super-app/postgres:testing';
 const POSTGRES_CONTEXT = fileURLToPath(new URL('../../../infra/docker/postgres', import.meta.url));
 const SUPERUSER = 'postgres';
+const PLATFORM_EXTENSIONS_SQL = `CREATE EXTENSION IF NOT EXISTS postgis;
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+CREATE SCHEMA IF NOT EXISTS partman;
+CREATE EXTENSION IF NOT EXISTS pg_partman SCHEMA partman;`;
 const SUPERUSER_PASSWORD = 'postgres';
 
 export interface PostgresFixture {
@@ -48,7 +52,14 @@ export async function startPostgres(database = 'superapp'): Promise<PostgresFixt
       if (!/^[a-z][a-z0-9_]*$/.test(name)) {
         throw new RangeError(`Invalid database name ${name}`);
       }
-      await admin.query(`CREATE DATABASE ${name} TEMPLATE ${database}`);
+      await admin.query(`CREATE DATABASE ${name}`);
+      const client = new pg.Client({ connectionString: uri({ database: name }) });
+      await client.connect();
+      try {
+        await client.query(PLATFORM_EXTENSIONS_SQL);
+      } finally {
+        await client.end();
+      }
       return uri({ database: name });
     },
     async stop() {

@@ -14,8 +14,8 @@ function daysBefore(now: Date, days: number): Date {
   return new Date(now.getTime() - days * 86_400_000);
 }
 
-export async function purgeStdTables(
-  trx: Transaction<unknown>,
+export async function purgeStdTables<DB>(
+  trx: Transaction<DB>,
   schema: string,
   now: Date = new Date(),
 ): Promise<PurgeResult> {

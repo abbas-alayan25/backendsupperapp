@@ -2,8 +2,8 @@ import { type Kysely, sql } from 'kysely';
 
 export const DEFAULT_BYPASS_ALLOWED = [/^.+_relay$/, /^migrator$/, /^debezium$/] as const;
 
-export async function findUnexpectedBypassRlsRoles(
-  db: Kysely<unknown>,
+export async function findUnexpectedBypassRlsRoles<DB>(
+  db: Kysely<DB>,
   allowed: readonly RegExp[] = DEFAULT_BYPASS_ALLOWED,
 ): Promise<string[]> {
   const result = await sql<{ rolname: string }>`
@@ -16,8 +16,8 @@ export async function findUnexpectedBypassRlsRoles(
     .filter((name) => !allowed.some((pattern) => pattern.test(name)));
 }
 
-export async function runtimeRolesWithBypass(
-  db: Kysely<unknown>,
+export async function runtimeRolesWithBypass<DB>(
+  db: Kysely<DB>,
   runtimeRoles: readonly string[],
 ): Promise<string[]> {
   if (runtimeRoles.length === 0) {

@@ -4,6 +4,7 @@ packages:
   - tools/*
 allowBuilds:
   '@bufbuild/buf': true
+  '@confluentinc/kafka-javascript': true
   '@swc/core': true
   cpu-features: false
   nx: true

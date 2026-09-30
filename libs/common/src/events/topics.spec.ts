@@ -12,7 +12,11 @@ import {
 describe('topics', () => {
   it('lists the 28 spec section 15 topics plus notify.inbox', () => {
     expect(TOPIC_NAMES).toHaveLength(29);
-    expect(TOPICS['tenancy.tenants']).toEqual({ partitions: 6, retentionDays: 30, compacted: true });
+    expect(TOPICS['tenancy.tenants']).toEqual({
+      partitions: 6,
+      retentionDays: 30,
+      compacted: true,
+    });
     expect(TOPICS['ledger.entries'].partitions).toBe(48);
   });
 
@@ -41,10 +45,20 @@ describe('topics', () => {
   });
 
   it('validates event type names', () => {
-    for (const valid of ['user.registered', 'kyc_application.approved', 'card_authorization.decided']) {
+    for (const valid of [
+      'user.registered',
+      'kyc_application.approved',
+      'card_authorization.decided',
+    ]) {
       expect(isEventType(valid)).toBe(true);
     }
-    for (const invalid of ['UserRegistered', 'user', 'user.Registered', 'user.registered.now', '']) {
+    for (const invalid of [
+      'UserRegistered',
+      'user',
+      'user.Registered',
+      'user.registered.now',
+      '',
+    ]) {
       expect(isEventType(invalid)).toBe(false);
     }
   });

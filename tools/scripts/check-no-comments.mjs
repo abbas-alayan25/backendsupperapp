@@ -3,7 +3,7 @@ import { extname, join, relative } from 'node:path';
 
 const root = process.cwd();
 const scanned = ['apps', 'libs'];
-const skipped = new Set(['node_modules', 'dist', '.nx', 'coverage']);
+const skipped = new Set(['node_modules', 'dist', '.nx', 'coverage', 'gen']);
 const commentPatterns = {
   '.go': /^\s*(\/\/|\/\*)/,
   '.proto': /^\s*(\/\/|\/\*)/,

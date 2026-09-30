@@ -9,8 +9,8 @@ export interface InboxTarget {
   readonly tenantId?: string;
 }
 
-export async function processOnce<T>(
-  trx: Transaction<unknown>,
+export async function processOnce<DB, T>(
+  trx: Transaction<DB>,
   target: InboxTarget,
   handler: () => Promise<T>,
 ): Promise<{ processed: true; value: T } | { processed: false }> {

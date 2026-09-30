@@ -44,6 +44,9 @@ jobs:
 
       - run: pnpm check:comments
 
+      - if: github.event_name == 'pull_request'
+        run: pnpm nx run proto:breaking
+
       - run: pnpm format:check
 
       - run: pnpm nx affected -t lint typecheck test build

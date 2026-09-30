@@ -1,0 +1,92 @@
+syntax = "proto3";
+
+package cards.v1;
+
+import "common/v1/money.proto";
+import "google/protobuf/timestamp.proto";
+
+service CardsService {
+  rpc GetCard(GetCardRequest) returns (GetCardResponse);
+  rpc BlockCard(BlockCardRequest) returns (BlockCardResponse);
+  rpc GetAuthorization(GetAuthorizationRequest) returns (GetAuthorizationResponse);
+}
+
+enum CardStatus {
+  CARD_STATUS_UNSPECIFIED = 0;
+  CARD_STATUS_REQUESTED = 1;
+  CARD_STATUS_ISSUED = 2;
+  CARD_STATUS_SHIPPED = 3;
+  CARD_STATUS_ACTIVE = 4;
+  CARD_STATUS_FROZEN = 5;
+  CARD_STATUS_BLOCKED = 6;
+  CARD_STATUS_EXPIRED = 7;
+  CARD_STATUS_REPLACED = 8;
+  CARD_STATUS_CLOSED = 9;
+}
+
+enum BlockReason {
+  BLOCK_REASON_UNSPECIFIED = 0;
+  BLOCK_REASON_LOST = 1;
+  BLOCK_REASON_STOLEN = 2;
+  BLOCK_REASON_FRAUD = 3;
+  BLOCK_REASON_DAMAGED = 4;
+  BLOCK_REASON_ADMIN = 5;
+}
+
+enum AuthorizationDecision {
+  AUTHORIZATION_DECISION_UNSPECIFIED = 0;
+  AUTHORIZATION_DECISION_APPROVED = 1;
+  AUTHORIZATION_DECISION_DECLINED = 2;
+}
+
+message Card {
+  string id = 1;
+  string user_id = 2;
+  string wallet_id = 3;
+  string program_id = 4;
+  string last4 = 5;
+  int32 expiry_month = 6;
+  int32 expiry_year = 7;
+  CardStatus status = 8;
+  BlockReason block_reason = 9;
+}
+
+message Authorization {
+  string id = 1;
+  string card_id = 2;
+  string processor_auth_id = 3;
+  string auth_type = 4;
+  common.v1.Money amount = 5;
+  common.v1.Money billing_amount = 6;
+  string mcc = 7;
+  string merchant_name = 8;
+  AuthorizationDecision decision = 9;
+  string decline_code = 10;
+  string hold_id = 11;
+  google.protobuf.Timestamp created_at = 12;
+}
+
+message GetCardRequest {
+  string card_id = 1;
+}
+
+message GetCardResponse {
+  Card card = 1;
+}
+
+message BlockCardRequest {
+  string card_id = 1;
+  BlockReason reason = 2;
+}
+
+message BlockCardResponse {
+  Card card = 1;
+}
+
+message GetAuthorizationRequest {
+  string authorization_id = 1;
+}
+
+message GetAuthorizationResponse {
+  Authorization authorization = 1;
+}

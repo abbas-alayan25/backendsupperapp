@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package common.v1;
+
+message PageRequest {
+  int32 limit = 1;
+  string cursor = 2;
+}
+
+message PageResponse {
+  string next_cursor = 1;
+}

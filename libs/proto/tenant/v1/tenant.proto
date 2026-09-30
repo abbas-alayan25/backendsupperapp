@@ -1,0 +1,107 @@
+syntax = "proto3";
+
+package tenant.v1;
+
+import "google/protobuf/struct.proto";
+
+service TenantService {
+  rpc GetProfile(GetProfileRequest) returns (GetProfileResponse);
+  rpc ResolveAdapter(ResolveAdapterRequest) returns (ResolveAdapterResponse);
+  rpc ResolveDomain(ResolveDomainRequest) returns (ResolveDomainResponse);
+  rpc ListActiveTenants(ListActiveTenantsRequest) returns (ListActiveTenantsResponse);
+}
+
+enum TenantStatus {
+  TENANT_STATUS_UNSPECIFIED = 0;
+  TENANT_STATUS_ONBOARDING = 1;
+  TENANT_STATUS_ACTIVE = 2;
+  TENANT_STATUS_SUSPENDED = 3;
+  TENANT_STATUS_OFFBOARDED = 4;
+}
+
+enum DeploymentModel {
+  DEPLOYMENT_MODEL_UNSPECIFIED = 0;
+  DEPLOYMENT_MODEL_SHARED = 1;
+  DEPLOYMENT_MODEL_DEDICATED = 2;
+}
+
+enum PartnerType {
+  PARTNER_TYPE_UNSPECIFIED = 0;
+  PARTNER_TYPE_BANK = 1;
+  PARTNER_TYPE_CARD_ISSUER = 2;
+  PARTNER_TYPE_KYC = 3;
+  PARTNER_TYPE_ACQUIRER = 4;
+  PARTNER_TYPE_BILLER = 5;
+  PARTNER_TYPE_SMS = 6;
+  PARTNER_TYPE_EMAIL = 7;
+  PARTNER_TYPE_PUSH = 8;
+}
+
+enum DomainKind {
+  DOMAIN_KIND_UNSPECIFIED = 0;
+  DOMAIN_KIND_API = 1;
+  DOMAIN_KIND_ADMIN = 2;
+  DOMAIN_KIND_MERCHANT = 3;
+  DOMAIN_KIND_WEB = 4;
+}
+
+message Tenant {
+  string id = 1;
+  string code = 2;
+  string legal_name = 3;
+  string display_name = 4;
+  string country = 5;
+  TenantStatus status = 6;
+  DeploymentModel deployment_model = 7;
+  string region = 8;
+  int32 current_profile_version = 9;
+}
+
+message TenantProfile {
+  int32 profile_version = 1;
+  google.protobuf.Struct brand = 2;
+  google.protobuf.Struct market = 3;
+  google.protobuf.Struct compliance = 4;
+  google.protobuf.Struct products = 5;
+  string fees_ref = 6;
+}
+
+message Adapter {
+  string id = 1;
+  PartnerType partner_type = 2;
+  string provider = 3;
+  int32 priority = 4;
+  google.protobuf.Struct config = 5;
+  string secret_ref = 6;
+}
+
+message GetProfileRequest {}
+
+message GetProfileResponse {
+  Tenant tenant = 1;
+  TenantProfile profile = 2;
+}
+
+message ResolveAdapterRequest {
+  PartnerType partner_type = 1;
+}
+
+message ResolveAdapterResponse {
+  repeated Adapter adapters = 1;
+}
+
+message ResolveDomainRequest {
+  string domain = 1;
+}
+
+message ResolveDomainResponse {
+  string tenant_id = 1;
+  DomainKind kind = 2;
+  TenantStatus status = 3;
+}
+
+message ListActiveTenantsRequest {}
+
+message ListActiveTenantsResponse {
+  repeated Tenant tenants = 1;
+}

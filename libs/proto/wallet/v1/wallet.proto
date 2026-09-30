@@ -1,0 +1,95 @@
+syntax = "proto3";
+
+package wallet.v1;
+
+import "common/v1/money.proto";
+
+service WalletService {
+  rpc GetWallet(GetWalletRequest) returns (GetWalletResponse);
+  rpc GetWalletByOwner(GetWalletByOwnerRequest) returns (GetWalletByOwnerResponse);
+  rpc ReserveLimit(ReserveLimitRequest) returns (ReserveLimitResponse);
+  rpc CommitLimit(CommitLimitRequest) returns (CommitLimitResponse);
+  rpc ReleaseLimit(ReleaseLimitRequest) returns (ReleaseLimitResponse);
+  rpc SetWalletStatus(SetWalletStatusRequest) returns (SetWalletStatusResponse);
+}
+
+enum WalletStatus {
+  WALLET_STATUS_UNSPECIFIED = 0;
+  WALLET_STATUS_ACTIVE = 1;
+  WALLET_STATUS_FROZEN = 2;
+  WALLET_STATUS_CLOSED = 3;
+}
+
+enum LimitService {
+  LIMIT_SERVICE_UNSPECIFIED = 0;
+  LIMIT_SERVICE_P2P = 1;
+  LIMIT_SERVICE_TOPUP = 2;
+  LIMIT_SERVICE_WITHDRAWAL = 3;
+  LIMIT_SERVICE_BILL = 4;
+  LIMIT_SERVICE_QR = 5;
+  LIMIT_SERVICE_CARD = 6;
+  LIMIT_SERVICE_CASH_OUT = 7;
+  LIMIT_SERVICE_ALL = 8;
+}
+
+message Wallet {
+  string id = 1;
+  string owner_type = 2;
+  string owner_id = 3;
+  string currency = 4;
+  string ledger_account_id = 5;
+  WalletStatus status = 6;
+  bool is_default = 7;
+  string frozen_reason = 8;
+}
+
+message GetWalletRequest {
+  string wallet_id = 1;
+}
+
+message GetWalletResponse {
+  Wallet wallet = 1;
+}
+
+message GetWalletByOwnerRequest {
+  string owner_type = 1;
+  string owner_id = 2;
+  string currency = 3;
+}
+
+message GetWalletByOwnerResponse {
+  Wallet wallet = 1;
+}
+
+message ReserveLimitRequest {
+  string wallet_id = 1;
+  LimitService service = 2;
+  common.v1.Money amount = 3;
+  string reservation_id = 4;
+}
+
+message ReserveLimitResponse {
+  string reservation_id = 1;
+}
+
+message CommitLimitRequest {
+  string reservation_id = 1;
+}
+
+message CommitLimitResponse {}
+
+message ReleaseLimitRequest {
+  string reservation_id = 1;
+}
+
+message ReleaseLimitResponse {}
+
+message SetWalletStatusRequest {
+  string wallet_id = 1;
+  WalletStatus status = 2;
+  string reason = 3;
+}
+
+message SetWalletStatusResponse {
+  Wallet wallet = 1;
+}

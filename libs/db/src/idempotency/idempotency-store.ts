@@ -1,19 +1,12 @@
 import { randomUUID } from 'node:crypto';
-import { AppError, newId } from '@super-app/common';
+import { type Actor, AppError, newId } from '@super-app/common';
 import type { Redis } from 'ioredis';
 import { type Kysely, sql } from 'kysely';
 import { withTenant } from '../database.js';
-import type { IdempotencyKeysTable, StdTables } from '../std-tables.js';
+import type { StdTables } from '../std-tables.js';
 
 export const IDEMPOTENCY_TTL_MS = 24 * 60 * 60 * 1000;
 export const IDEMPOTENCY_LOCK_MS = 60_000;
-
-export type ActorType = IdempotencyKeysTable['actor_type'];
-
-export interface Actor {
-  readonly type: ActorType;
-  readonly id: string;
-}
 
 export interface IdempotencyRequest {
   readonly tenantId: string;
@@ -36,9 +29,9 @@ export function isStorableStatus(status: number): boolean {
   return status >= 200 && status < 500;
 }
 
-export class IdempotencyStore {
+export class IdempotencyStore<DB = StdTables> {
   constructor(
-    private readonly db: Kysely<unknown>,
+    private readonly db: Kysely<DB>,
     private readonly redis: Redis,
     private readonly schema: string,
     private readonly now: () => Date = () => new Date(),
@@ -78,7 +71,7 @@ export class IdempotencyStore {
         return;
       }
       const now = this.now();
-      await withTenant(this.db as Kysely<StdTables>, request.tenantId, async (trx) => {
+      await withTenant(this.db as unknown as Kysely<StdTables>, request.tenantId, async (trx) => {
         await trx
           .withSchema(this.schema)
           .insertInto('idempotency_keys')
@@ -120,12 +113,17 @@ export class IdempotencyStore {
   }
 
   private async release(request: IdempotencyRequest, lockToken: string): Promise<void> {
-    await this.redis.eval(RELEASE_LOCK, 1, idempotencyLockKey(request.tenantId, request.key), lockToken);
+    await this.redis.eval(
+      RELEASE_LOCK,
+      1,
+      idempotencyLockKey(request.tenantId, request.key),
+      lockToken,
+    );
   }
 
   private async find(request: IdempotencyRequest) {
     const now = this.now();
-    return withTenant(this.db as Kysely<StdTables>, request.tenantId, (trx) =>
+    return withTenant(this.db as unknown as Kysely<StdTables>, request.tenantId, (trx) =>
       trx
         .withSchema(this.schema)
         .selectFrom('idempotency_keys')

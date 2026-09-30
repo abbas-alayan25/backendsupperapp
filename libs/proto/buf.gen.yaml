@@ -1,0 +1,23 @@
+version: v2
+managed:
+  enabled: true
+  override:
+    - file_option: go_package_prefix
+      value: superapp/libs/proto/gen/go
+plugins:
+  - local: node_modules/.bin/protoc-gen-ts_proto
+    out: src/gen
+    opt:
+      - outputServices=grpc-js
+      - env=node
+      - esModuleInterop=true
+      - importSuffix=.js
+      - forceLong=bigint
+      - snakeToCamel=true
+      - useExactTypes=false
+  - local: ../../tools/go/bin/protoc-gen-go
+    out: gen/go
+    opt: paths=source_relative
+  - local: ../../tools/go/bin/protoc-gen-go-grpc
+    out: gen/go
+    opt: paths=source_relative

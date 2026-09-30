@@ -1,0 +1,60 @@
+syntax = "proto3";
+
+package risk.v1;
+
+import "common/v1/money.proto";
+
+service RiskService {
+  rpc Evaluate(EvaluateRequest) returns (EvaluateResponse);
+}
+
+enum Stage {
+  STAGE_UNSPECIFIED = 0;
+  STAGE_ONBOARDING = 1;
+  STAGE_LOGIN = 2;
+  STAGE_PRE_TXN = 3;
+  STAGE_POST_TXN = 4;
+}
+
+enum Decision {
+  DECISION_UNSPECIFIED = 0;
+  DECISION_ALLOW = 1;
+  DECISION_CHALLENGE = 2;
+  DECISION_HOLD = 3;
+  DECISION_BLOCK = 4;
+}
+
+message Subject {
+  string type = 1;
+  string id = 2;
+}
+
+message Device {
+  string device_id = 1;
+  string platform = 2;
+  string app_version = 3;
+  string ip = 4;
+}
+
+message Counterparty {
+  string type = 1;
+  string id = 2;
+  bool new_beneficiary = 3;
+}
+
+message EvaluateRequest {
+  Stage stage = 1;
+  Subject subject = 2;
+  common.v1.Money amount = 3;
+  Device device = 4;
+  Counterparty counterparty = 5;
+  string service = 6;
+  string merchant_mcc = 7;
+}
+
+message EvaluateResponse {
+  Decision decision = 1;
+  int32 score = 2;
+  repeated string matched_rules = 3;
+  string decision_id = 4;
+}

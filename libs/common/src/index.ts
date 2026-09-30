@@ -1,3 +1,4 @@
+export * from './auth/auth-level.js';
 export * from './context/request-context.js';
 export * from './errors/app-error.js';
 export * from './errors/error-codes.js';

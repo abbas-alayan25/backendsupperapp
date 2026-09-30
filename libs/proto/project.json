@@ -3,13 +3,64 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "libs/proto",
   "projectType": "library",
-  "tags": ["scope:shared", "lang:proto"],
+  "tags": ["scope:shared", "lang:ts", "lang:proto"],
   "targets": {
+    "generate": {
+      "executor": "nx:run-commands",
+      "outputs": ["{projectRoot}/src/gen", "{projectRoot}/gen/go"],
+      "options": {
+        "commands": [
+          "GOWORK=off go build -modfile=../../tools/go/go.mod -o ../../tools/go/bin/ google.golang.org/protobuf/cmd/protoc-gen-go google.golang.org/grpc/cmd/protoc-gen-go-grpc",
+          "rm -rf src/gen && find gen/go -name '*.pb.go' -delete",
+          "buf generate",
+          "cd gen/go && GOWORK=off go mod tidy"
+        ],
+        "parallel": false,
+        "cwd": "{projectRoot}"
+      }
+    },
     "lint": {
       "executor": "nx:run-commands",
       "options": {
-        "commands": ["buf lint", "buf format --diff --exit-code"],
+        "commands": ["buf lint", "buf format --diff --exit-code", "eslint src"],
         "parallel": false,
+        "cwd": "{projectRoot}"
+      }
+    },
+    "breaking": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "buf breaking --against '../../.git#branch=main,subdir=libs/proto'",
+        "cwd": "{projectRoot}"
+      }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["^build"],
+      "outputs": ["{projectRoot}/dist"],
+      "options": {
+        "command": "tsc -p tsconfig.lib.json",
+        "cwd": "{projectRoot}"
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc -p tsconfig.json",
+        "cwd": "{projectRoot}"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "vitest run --config vitest.config.ts --passWithNoTests",
+        "cwd": "{projectRoot}"
+      }
+    },
+    "test-integration": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "vitest run --config vitest.int.config.ts",
         "cwd": "{projectRoot}"
       }
     }

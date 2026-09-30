@@ -57,6 +57,7 @@ Status: **Open**, **Partial** (part answered), **Answered** (small answers in th
 | Q47 | `notify.inbox` topic missing from §15                   | Open     | M2, M14    |
 | Q48 | `delivery.locations` producer has no outbox             | Open     | M14        |
 | Q49 | Topic and consumers for KYB decisions                   | Open     | M9, M16    |
+| Q50 | Merchant signature encoding and signing key             | Resolved | —          |
 
 ## Data model and tenancy
 
@@ -125,6 +126,8 @@ Status: **Open**, **Partial** (part answered), **Answered** (small answers in th
 - **Q47 — RESOLVED (delegated; see `docs/decisions.md`).** `notify.inbox` is missing from §15.** §14 lists `notify.inbox` as the source topic of the `notification.new` socket event, but §15 has no such topic. Q7 validates topics against the §15 list. Add `notify.inbox` (producer notification-service, consumer realtime-gateway)?
 - **Q48 — RESOLVED (delegated; see `docs/decisions.md`).** `delivery.locations` has no outbox.** §15 makes realtime-gateway the producer of `delivery.locations`, but the gateway owns no database schema, so it cannot use the transactional outbox. Allow a direct idempotent producer for this one telemetry topic?
 - **Q49 — RESOLVED (delegated; see `docs/decisions.md`).** KYB decisions.** §15 lists no topic for business (KYB) decisions, and marketplace-service is not a consumer of `kyc.applications`, yet merchants become active after KYB approval. Publish `business.approved` / `business.rejected` on `kyc.applications` and add marketplace-service as a consumer?
+
+- **Q50 — RESOLVED (delegated; see `docs/decisions.md`).** `api_keys` has only `key_hash`, but HMAC verification needs the signing key on the server. The signing key is `sha256(api key)`. The owner should confirm the risk noted in the decision.
 
 ## Answered
 

@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+package platform.v1;
+
+import "google/protobuf/struct.proto";
+
+service PlatformService {
+  rpc EvaluateFlags(EvaluateFlagsRequest) returns (EvaluateFlagsResponse);
+  rpc IsServiceEnabled(IsServiceEnabledRequest) returns (IsServiceEnabledResponse);
+  rpc GetScreen(GetScreenRequest) returns (GetScreenResponse);
+}
+
+message UserContext {
+  string user_id = 1;
+  string country = 2;
+  string platform = 3;
+  string app_version = 4;
+  int32 kyc_tier = 5;
+  repeated string segment_ids = 6;
+  string locale = 7;
+}
+
+message FlagValue {
+  string flag_key = 1;
+  bool enabled = 2;
+  bool kill_switch = 3;
+  string disabled_message = 4;
+}
+
+message EvaluateFlagsRequest {
+  UserContext user = 1;
+  repeated string flag_keys = 2;
+}
+
+message EvaluateFlagsResponse {
+  repeated FlagValue flags = 1;
+}
+
+message IsServiceEnabledRequest {
+  UserContext user = 1;
+  string service_key = 2;
+}
+
+message IsServiceEnabledResponse {
+  bool enabled = 1;
+  string disabled_message = 2;
+}
+
+message GetScreenRequest {
+  UserContext user = 1;
+  string screen_key = 2;
+  int32 schema_version = 3;
+}
+
+message GetScreenResponse {
+  string screen_key = 1;
+  int32 version = 2;
+  int32 schema_version = 3;
+  google.protobuf.Struct content = 4;
+  string etag = 5;
+}

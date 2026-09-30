@@ -1,4 +1,13 @@
-import { Controller, type DynamicModule, Get, Inject, Module, Res } from '@nestjs/common';
+import {
+  Controller,
+  type DynamicModule,
+  Get,
+  Inject,
+  Module,
+  Res,
+  SetMetadata,
+} from '@nestjs/common';
+import { AUTH_LEVEL_METADATA } from '@super-app/common';
 import type { FastifyReply } from 'fastify';
 import { type ReadinessCheck, type ReadinessReport, evaluateReadiness } from './readiness.js';
 
@@ -8,6 +17,7 @@ export const HEALTH_PATHS: readonly string[] = [HEALTH_PATH, READY_PATH];
 export const READINESS_CHECKS = Symbol('READINESS_CHECKS');
 
 @Controller()
+@SetMetadata(AUTH_LEVEL_METADATA, 'Public')
 class HealthController {
   constructor(@Inject(READINESS_CHECKS) private readonly checks: readonly ReadinessCheck[]) {}
 

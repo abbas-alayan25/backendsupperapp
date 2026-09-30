@@ -16,8 +16,8 @@ export interface KeyedResult<T> {
   readonly value: T;
 }
 
-export async function insertWithKey<T>(
-  trx: Transaction<unknown>,
+export async function insertWithKey<DB, T>(
+  trx: Transaction<DB>,
   target: KeyTableTarget,
   create: (id: string) => Promise<T>,
   load: (id: string) => Promise<T>,
@@ -30,7 +30,11 @@ export async function insertWithKey<T>(
     throw new RangeError('insertWithKey needs at least one key column');
   }
   const id = newId();
-  const columns = sql.join([sql.ref('tenant_id'), ...keyNames.map((name) => sql.ref(name)), refColumn]);
+  const columns = sql.join([
+    sql.ref('tenant_id'),
+    ...keyNames.map((name) => sql.ref(name)),
+    refColumn,
+  ]);
   const values = sql.join([tenantId, ...keyNames.map((name) => target.key[name]), id]);
   const inserted = await sql<{ ref: string }>`
     INSERT INTO ${table} (${columns}) VALUES (${values})
@@ -41,7 +45,10 @@ export async function insertWithKey<T>(
     return { created: true, id, value: await create(id) };
   }
   const conditions = sql.join(
-    [sql`tenant_id = ${tenantId}`, ...keyNames.map((name) => sql`${sql.ref(name)} = ${target.key[name]}`)],
+    [
+      sql`tenant_id = ${tenantId}`,
+      ...keyNames.map((name) => sql`${sql.ref(name)} = ${target.key[name]}`),
+    ],
     sql` AND `,
   );
   const existing = await sql<{ ref: string }>`

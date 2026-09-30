@@ -24,7 +24,14 @@ const noCommentsPlugin = {
 
 export default tseslint.config(
   {
-    ignores: ['**/dist/**', '**/node_modules/**', '**/coverage/**', '.nx/**', '**/*.config.*'],
+    ignores: [
+      '**/dist/**',
+      '**/node_modules/**',
+      '**/coverage/**',
+      '.nx/**',
+      '**/*.config.*',
+      '**/src/gen/**',
+    ],
   },
   js.configs.recommended,
   ...tseslint.configs.strictTypeChecked,

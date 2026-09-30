@@ -25,6 +25,7 @@
     "@opentelemetry/sdk-trace-base": "2.11.0",
     "@opentelemetry/semantic-conventions": "1.43.0",
     "@super-app/common": "workspace:*",
+    "@super-app/db": "workspace:*",
     "fastify": "5.12.5",
     "grpc-health-check": "2.1.0",
     "reflect-metadata": "0.2.2",

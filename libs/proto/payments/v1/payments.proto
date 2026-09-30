@@ -1,0 +1,118 @@
+syntax = "proto3";
+
+package payments.v1;
+
+import "common/v1/money.proto";
+import "google/protobuf/timestamp.proto";
+
+service PaymentsService {
+  rpc CreatePayment(CreatePaymentRequest) returns (CreatePaymentResponse);
+  rpc GetPayment(GetPaymentRequest) returns (GetPaymentResponse);
+  rpc RefundPayment(RefundPaymentRequest) returns (RefundPaymentResponse);
+  rpc CapturePayment(CapturePaymentRequest) returns (CapturePaymentResponse);
+}
+
+enum PaymentType {
+  PAYMENT_TYPE_UNSPECIFIED = 0;
+  PAYMENT_TYPE_P2P = 1;
+  PAYMENT_TYPE_REQUEST = 2;
+  PAYMENT_TYPE_QR_MERCHANT = 3;
+  PAYMENT_TYPE_TOPUP_CARD = 4;
+  PAYMENT_TYPE_TOPUP_BANK = 5;
+  PAYMENT_TYPE_CASH_IN = 6;
+  PAYMENT_TYPE_CASH_OUT = 7;
+  PAYMENT_TYPE_WITHDRAWAL = 8;
+  PAYMENT_TYPE_BILL = 9;
+  PAYMENT_TYPE_ORDER = 10;
+  PAYMENT_TYPE_REFUND = 11;
+}
+
+enum PaymentStatus {
+  PAYMENT_STATUS_UNSPECIFIED = 0;
+  PAYMENT_STATUS_CREATED = 1;
+  PAYMENT_STATUS_RISK_CHECK = 2;
+  PAYMENT_STATUS_PENDING_USER = 3;
+  PAYMENT_STATUS_PENDING_REVIEW = 4;
+  PAYMENT_STATUS_AUTHORIZED = 5;
+  PAYMENT_STATUS_PROCESSING = 6;
+  PAYMENT_STATUS_COMPLETED = 7;
+  PAYMENT_STATUS_FAILED = 8;
+  PAYMENT_STATUS_DECLINED = 9;
+  PAYMENT_STATUS_REVERSED = 10;
+  PAYMENT_STATUS_PARTIALLY_REFUNDED = 11;
+  PAYMENT_STATUS_REFUNDED = 12;
+}
+
+enum Rail {
+  RAIL_UNSPECIFIED = 0;
+  RAIL_INTERNAL = 1;
+  RAIL_CARD = 2;
+  RAIL_BANK = 3;
+  RAIL_BILLER = 4;
+  RAIL_AGENT = 5;
+}
+
+message Payment {
+  string id = 1;
+  PaymentType type = 2;
+  PaymentStatus status = 3;
+  string payer_wallet_id = 4;
+  string payee_wallet_id = 5;
+  common.v1.Money amount = 6;
+  common.v1.Money fee = 7;
+  string fx_rate = 8;
+  common.v1.Money payee_amount = 9;
+  Rail rail = 10;
+  string adapter = 11;
+  string external_ref = 12;
+  string reference_code = 13;
+  string note = 14;
+  string hold_id = 15;
+  string journal_entry_id = 16;
+  string failure_code = 17;
+  google.protobuf.Timestamp completed_at = 18;
+  google.protobuf.Timestamp created_at = 19;
+}
+
+message CreatePaymentRequest {
+  PaymentType type = 1;
+  string payer_wallet_id = 2;
+  string payee_wallet_id = 3;
+  common.v1.Money amount = 4;
+  string note = 5;
+  string reference_type = 6;
+  string reference_id = 7;
+  bool hold_only = 8;
+  string device_id = 9;
+}
+
+message CreatePaymentResponse {
+  Payment payment = 1;
+}
+
+message GetPaymentRequest {
+  string payment_id = 1;
+}
+
+message GetPaymentResponse {
+  Payment payment = 1;
+}
+
+message RefundPaymentRequest {
+  string payment_id = 1;
+  common.v1.Money amount = 2;
+  string reason = 3;
+}
+
+message RefundPaymentResponse {
+  Payment refund = 1;
+}
+
+message CapturePaymentRequest {
+  string payment_id = 1;
+  common.v1.Money amount = 2;
+}
+
+message CapturePaymentResponse {
+  Payment payment = 1;
+}

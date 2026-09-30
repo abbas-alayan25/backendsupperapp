@@ -1,0 +1,70 @@
+syntax = "proto3";
+
+package banking.v1;
+
+import "common/v1/money.proto";
+import "google/protobuf/timestamp.proto";
+
+service BankingService {
+  rpc VerifyAccount(VerifyAccountRequest) returns (VerifyAccountResponse);
+  rpc InitiatePayout(InitiatePayoutRequest) returns (InitiatePayoutResponse);
+  rpc GetTransfer(GetTransferRequest) returns (GetTransferResponse);
+}
+
+enum VerificationStatus {
+  VERIFICATION_STATUS_UNSPECIFIED = 0;
+  VERIFICATION_STATUS_PENDING = 1;
+  VERIFICATION_STATUS_VERIFIED = 2;
+  VERIFICATION_STATUS_FAILED = 3;
+}
+
+enum TransferStatus {
+  TRANSFER_STATUS_UNSPECIFIED = 0;
+  TRANSFER_STATUS_CREATED = 1;
+  TRANSFER_STATUS_SUBMITTED = 2;
+  TRANSFER_STATUS_ACCEPTED = 3;
+  TRANSFER_STATUS_SETTLED = 4;
+  TRANSFER_STATUS_REJECTED = 5;
+  TRANSFER_STATUS_RETURNED = 6;
+  TRANSFER_STATUS_UNMATCHED = 7;
+}
+
+message VerifyAccountRequest {
+  string linked_account_id = 1;
+}
+
+message VerifyAccountResponse {
+  VerificationStatus status = 1;
+  string holder_name = 2;
+  bool name_matches = 3;
+}
+
+message InitiatePayoutRequest {
+  string payment_id = 1;
+  string linked_account_id = 2;
+  common.v1.Money amount = 3;
+}
+
+message InitiatePayoutResponse {
+  Transfer transfer = 1;
+}
+
+message GetTransferRequest {
+  string transfer_id = 1;
+}
+
+message GetTransferResponse {
+  Transfer transfer = 1;
+}
+
+message Transfer {
+  string id = 1;
+  string direction = 2;
+  string payment_id = 3;
+  common.v1.Money amount = 4;
+  TransferStatus status = 5;
+  string rail = 6;
+  string rail_ref = 7;
+  string failure_code = 8;
+  google.protobuf.Timestamp value_date = 9;
+}

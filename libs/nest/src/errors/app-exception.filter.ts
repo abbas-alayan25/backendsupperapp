@@ -10,6 +10,7 @@ import {
   toErrorEnvelope,
 } from '@super-app/common';
 import type { FastifyReply, FastifyRequest } from 'fastify';
+import { IDEMPOTENT_REPLAYED_HEADER, IdempotentReplay } from '../idempotency/idempotent-replay.js';
 
 function statusCodeOf(exception: unknown): number | undefined {
   if (exception instanceof HttpException) {
@@ -43,6 +44,13 @@ export class AppExceptionFilter implements ExceptionFilter {
     const http = host.switchToHttp();
     const request = http.getRequest<FastifyRequest>();
     const reply = http.getResponse<FastifyReply>();
+    if (exception instanceof IdempotentReplay) {
+      void reply
+        .header(IDEMPOTENT_REPLAYED_HEADER, 'true')
+        .status(exception.status)
+        .send(exception.body);
+      return;
+    }
     const error = toAppError(exception);
     if (error.httpStatus >= 500) {
       this.logger.error({ err: exception }, 'request failed');

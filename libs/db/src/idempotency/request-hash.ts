@@ -15,7 +15,8 @@ function canonicalize(value: unknown): unknown {
 }
 
 export function canonicalJson(value: unknown): string {
-  return JSON.stringify(canonicalize(value)) ?? 'null';
+  const canonical = canonicalize(value);
+  return canonical === undefined ? 'null' : JSON.stringify(canonical);
 }
 
 export function requestHash(request: { method: string; path: string; body: unknown }): string {

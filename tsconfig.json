@@ -87,6 +87,9 @@
     },
     {
       "path": "./apps/console-bff"
+    },
+    {
+      "path": "./libs/proto"
     }
   ]
 }

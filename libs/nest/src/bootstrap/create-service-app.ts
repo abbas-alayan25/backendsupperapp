@@ -39,6 +39,7 @@ export async function createServiceApp(
   );
   const app = await NestFactory.create<NestFastifyApplication>(rootModule, adapter, {
     logger: new PinoNestLogger(options.logger),
+    rawBody: true,
   });
   app.useGlobalFilters(new AppExceptionFilter(options.logger, defaultLocale));
   return app;

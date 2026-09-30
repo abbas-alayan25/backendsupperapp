@@ -1,0 +1,71 @@
+syntax = "proto3";
+
+package delivery.v1;
+
+import "common/v1/money.proto";
+import "google/protobuf/timestamp.proto";
+
+service DeliveryService {
+  rpc CreateDelivery(CreateDeliveryRequest) returns (CreateDeliveryResponse);
+  rpc CancelDelivery(CancelDeliveryRequest) returns (CancelDeliveryResponse);
+  rpc GetDelivery(GetDeliveryRequest) returns (GetDeliveryResponse);
+}
+
+enum DeliveryStatus {
+  DELIVERY_STATUS_UNSPECIFIED = 0;
+  DELIVERY_STATUS_PENDING_ASSIGNMENT = 1;
+  DELIVERY_STATUS_OFFERED = 2;
+  DELIVERY_STATUS_ASSIGNED = 3;
+  DELIVERY_STATUS_AT_PICKUP = 4;
+  DELIVERY_STATUS_PICKED_UP = 5;
+  DELIVERY_STATUS_AT_DROPOFF = 6;
+  DELIVERY_STATUS_DELIVERED = 7;
+  DELIVERY_STATUS_FAILED = 8;
+  DELIVERY_STATUS_CANCELLED = 9;
+}
+
+message GeoPoint {
+  double lat = 1;
+  double lng = 2;
+}
+
+message Delivery {
+  string id = 1;
+  string order_id = 2;
+  string rider_id = 3;
+  DeliveryStatus status = 4;
+  GeoPoint pickup_location = 5;
+  GeoPoint dropoff_location = 6;
+  int32 distance_m = 7;
+  google.protobuf.Timestamp eta_at = 8;
+  common.v1.Money cod_amount = 9;
+}
+
+message CreateDeliveryRequest {
+  string order_id = 1;
+  string store_id = 2;
+  GeoPoint pickup_location = 3;
+  GeoPoint dropoff_location = 4;
+  common.v1.Money cod_amount = 5;
+}
+
+message CreateDeliveryResponse {
+  Delivery delivery = 1;
+}
+
+message CancelDeliveryRequest {
+  string delivery_id = 1;
+  string reason = 2;
+}
+
+message CancelDeliveryResponse {
+  Delivery delivery = 1;
+}
+
+message GetDeliveryRequest {
+  string delivery_id = 1;
+}
+
+message GetDeliveryResponse {
+  Delivery delivery = 1;
+}
