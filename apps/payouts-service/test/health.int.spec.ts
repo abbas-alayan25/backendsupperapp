@@ -1,0 +1,36 @@
+import 'reflect-metadata';
+import { createLogger } from '@super-app/common';
+import { createServiceApp } from '@super-app/nest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { AppModule } from '../src/app.module.js';
+
+describe('payouts-service', () => {
+  let app: Awaited<ReturnType<typeof createServiceApp>>;
+
+  beforeAll(async () => {
+    const logger = createLogger({
+      service: 'payouts-service',
+      userIdHashKey: 'test',
+      level: 'silent',
+    });
+    app = await createServiceApp(AppModule, { logger });
+    await app.init();
+    await app.getHttpAdapter().getInstance().ready();
+  });
+
+  afterAll(async () => {
+    await app.close();
+  });
+
+  it('is live', async () => {
+    const response = await app.getHttpAdapter().getInstance().inject({ url: '/health' });
+    expect(response.statusCode).toBe(200);
+    expect(response.json()).toEqual({ status: 'ok' });
+  });
+
+  it('is ready', async () => {
+    const response = await app.getHttpAdapter().getInstance().inject({ url: '/ready' });
+    expect(response.statusCode).toBe(200);
+    expect(response.json()).toEqual({ status: 'ok', checks: {} });
+  });
+});

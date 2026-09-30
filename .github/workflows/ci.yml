@@ -31,6 +31,10 @@ jobs:
       - uses: actions/setup-go@v6
         with:
           go-version-file: libs/go/common/go.mod
+          cache-dependency-path: |
+            libs/go/common/go.sum
+            apps/**/go.sum
+            tools/go/go.sum
 
       - run: pnpm install --frozen-lockfile
 
@@ -45,3 +49,5 @@ jobs:
       - run: pnpm nx affected -t lint typecheck test build
 
       - run: pnpm nx affected -t test-integration --parallel=1
+
+      - run: pnpm dev:smoke

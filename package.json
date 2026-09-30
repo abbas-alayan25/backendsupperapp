@@ -17,8 +17,10 @@
     "format:check": "prettier --check .",
     "check:versions": "node tools/scripts/check-exact-versions.mjs",
     "check:comments": "node tools/scripts/check-no-comments.mjs",
-    "compose:up": "docker compose up -d --wait",
-    "compose:down": "docker compose down"
+    "dev:up": "docker compose up -d --wait --wait-timeout 600",
+    "dev:down": "docker compose down",
+    "dev:smoke": "nx run infra-tests:smoke",
+    "db:migrate": "nx run-many -t migrate"
   },
   "devDependencies": {
     "@bufbuild/buf": "1.73.0",

@@ -4,6 +4,7 @@ import { FastifyAdapter, type NestFastifyApplication } from '@nestjs/platform-fa
 import { LogController } from 'fastify';
 import { DEFAULT_LOCALE, type Locale, type Logger } from '@super-app/common';
 import { AppExceptionFilter } from '../errors/app-exception.filter.js';
+import { HEALTH_PATHS } from '../health/health.module.js';
 import { PinoNestLogger } from '../logging/pino-nest-logger.js';
 import { resolveRequestId } from '../tenancy/request-id.js';
 import { REQUEST_ID_HEADER, createTenantContextHook } from '../tenancy/tenant-context.hook.js';
@@ -33,14 +34,13 @@ export async function createServiceApp(
     'onRequest',
     createTenantContextHook({
       defaultLocale,
-      tenantExemptPaths: options.tenantExemptPaths ?? [],
+      tenantExemptPaths: [...HEALTH_PATHS, ...(options.tenantExemptPaths ?? [])],
     }),
   );
   const app = await NestFactory.create<NestFastifyApplication>(rootModule, adapter, {
     logger: new PinoNestLogger(options.logger),
   });
   app.useGlobalFilters(new AppExceptionFilter(options.logger, defaultLocale));
-  app.enableShutdownHooks();
   return app;
 }
 

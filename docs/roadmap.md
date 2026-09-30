@@ -12,7 +12,7 @@ Conventions:
 
 | #   | Milestone                                                   | Status      | Prompt |
 | --- | ----------------------------------------------------------- | ----------- | ------ |
-| M1  | Monorepo and local infrastructure                           | IN PROGRESS | 1      |
+| M1  | Monorepo and local infrastructure                           | DONE        | 1      |
 | M2  | Shared libraries                                            | IN PROGRESS | 2      |
 | M3  | tenant-service and adapter framework                        | TODO        | 3      |
 | M4  | API gateway                                                 | TODO        | 4      |
@@ -39,26 +39,20 @@ Conventions:
 
 ---
 
-## M1. Monorepo and local infrastructure — IN PROGRESS
+## M1. Monorepo and local infrastructure — DONE
 
 - **Spec:** §1, §2, §16 CI/CD step 1.
-- **Done so far:**
-  - Nx + pnpm workspace, strict TS, ESLint with a no-comments rule, Prettier, Vitest and a GitHub Actions workflow.
-  - Go workspace (`go.work`, `libs/go/common`), buf workspace (`libs/proto`), Renovate, and version/comment check scripts.
-  - `docker-compose.yml` with Postgres (PostGIS, pgcrypto, pg_partman, logical WAL), PgBouncer, Redis, Kafka (KRaft), Schema Registry, Debezium Connect, Temporal, Keycloak and S3 (RustFS).
-- **Remaining:**
-  - Skeleton NestJS (Fastify) apps for every TS service; empty Go modules for `ledger-service` and `cards-auth`.
-  - golangci-lint.
-  - OpenSearch, ClickHouse, Mailpit and Tempo in compose.
-  - `dev:up`, `dev:down`, `db:migrate`, `test`, `test:integration` and `lint` targets.
-  - `GET /health` and `/ready` on every service.
-- **Tables / endpoints / events:** none beyond `/health` and `/ready`.
-- **Done when:** `dev:up` starts all infrastructure healthy; every service boots and returns 200 on `/health`; CI passes on a clean clone; the Postgres image Testcontainers test passes.
+- **Built:**
+  - Nx + pnpm workspace, strict TS, ESLint with a no-comments rule, Prettier, Vitest, golangci-lint, buf, Renovate, and version/comment check scripts.
+  - 21 NestJS (Fastify) apps and 2 Go apps (`ledger-service`, `cards-service/cards-auth`), each serving `/health` and `/ready` on 3000, gRPC health on 50051 and metrics on 9464.
+  - `docker-compose.yml` with Postgres (PostGIS, pgcrypto, pg_partman, logical WAL), PgBouncer, Redis, Kafka, Schema Registry, Debezium Connect, Temporal, Keycloak, S3 (RustFS), OpenSearch, ClickHouse, Mailpit, Tempo and Grafana.
+  - Root scripts `dev:up`, `dev:down`, `dev:smoke`, `db:migrate`, `lint`, `test`, `test:integration`; GitHub Actions workflow running all of them.
+- **Tests:** 21 in-process app health tests; Go `server` package and app tests; `dev:smoke` boots all 23 services as processes and checks HTTP, gRPC, metrics and clean SIGTERM shutdown; Postgres image Testcontainers test; every compose service healthy.
 
 ## M2. Shared libraries — IN PROGRESS
 
 - **Spec:** §3, §9, §13, §15, §16.
-- **Done:** `libs/common` (tenant context, money, UUIDv7, cursor pagination, error model and codes, locale, logger, PII crypto) and `libs/nest` (Fastify bootstrap, exception filter, tenant-context hook, OpenTelemetry). 186 tests pass.
+- **Done:** `libs/common` (tenant context, money, UUIDv7, cursor pagination, error model and codes, locale, logger, PII crypto) and `libs/nest` (Fastify bootstrap, exception filter, tenant-context hook, OpenTelemetry). The M1 health and gRPC runtime was added to `libs/nest`.
 - **Remaining:**
   - `libs/common`: header parsing for `X-Device-Id`, `X-App-Version` and `X-Platform`.
   - `libs/db`: Prisma and Kysely helpers with `SET LOCAL app.tenant_id`; RLS and standard-column SQL templates; the Std tables as a reusable migration; outbox writer; idempotency interceptor using `t:{tid}:idem:{key}` (Q1, Q2, Q7, Q12).

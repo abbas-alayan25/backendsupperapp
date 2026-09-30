@@ -10,16 +10,39 @@
   "targets": {
     "typecheck": {
       "executor": "nx:run-commands",
-      "options": { "command": "tsc -p tsconfig.json", "cwd": "{projectRoot}" }
+      "options": {
+        "command": "tsc -p tsconfig.json",
+        "cwd": "{projectRoot}"
+      }
     },
     "lint": {
       "executor": "nx:run-commands",
-      "options": { "command": "eslint .", "cwd": "{projectRoot}" }
+      "options": {
+        "command": "eslint .",
+        "cwd": "{projectRoot}"
+      }
     },
     "test-integration": {
       "executor": "nx:run-commands",
       "inputs": ["default", "infra"],
-      "options": { "command": "vitest run --config vitest.int.config.ts", "cwd": "{projectRoot}" }
+      "options": {
+        "command": "vitest run --config vitest.int.config.ts",
+        "cwd": "{projectRoot}"
+      }
+    },
+    "smoke": {
+      "executor": "nx:run-commands",
+      "dependsOn": [
+        {
+          "projects": ["tag:type:service"],
+          "target": "build"
+        }
+      ],
+      "cache": false,
+      "options": {
+        "command": "vitest run --config vitest.smoke.config.ts",
+        "cwd": "{projectRoot}"
+      }
     }
   }
 }

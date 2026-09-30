@@ -1,3 +1,7 @@
 go 1.27.1
 
-use ./libs/go/common
+use (
+	./apps/cards-service/cards-auth
+	./apps/ledger-service
+	./libs/go/common
+)

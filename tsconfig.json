@@ -1,8 +1,77 @@
 {
   "files": [],
   "references": [
-    { "path": "./libs/common" },
-    { "path": "./libs/nest" },
-    { "path": "./tools/infra-tests" }
+    {
+      "path": "./libs/common"
+    },
+    {
+      "path": "./libs/nest"
+    },
+    {
+      "path": "./tools/infra-tests"
+    },
+    {
+      "path": "./apps/auth-service"
+    },
+    {
+      "path": "./apps/tenant-service"
+    },
+    {
+      "path": "./apps/kyc-service"
+    },
+    {
+      "path": "./apps/risk-service"
+    },
+    {
+      "path": "./apps/wallet-service"
+    },
+    {
+      "path": "./apps/payments-service"
+    },
+    {
+      "path": "./apps/banking-service"
+    },
+    {
+      "path": "./apps/cards-service"
+    },
+    {
+      "path": "./apps/bills-service"
+    },
+    {
+      "path": "./apps/marketplace-service"
+    },
+    {
+      "path": "./apps/delivery-service"
+    },
+    {
+      "path": "./apps/payouts-service"
+    },
+    {
+      "path": "./apps/platform-service"
+    },
+    {
+      "path": "./apps/notification-service"
+    },
+    {
+      "path": "./apps/realtime-gateway"
+    },
+    {
+      "path": "./apps/support-service"
+    },
+    {
+      "path": "./apps/reporting-service"
+    },
+    {
+      "path": "./apps/audit-service"
+    },
+    {
+      "path": "./apps/file-service"
+    },
+    {
+      "path": "./apps/admin-bff"
+    },
+    {
+      "path": "./apps/console-bff"
+    }
   ]
 }

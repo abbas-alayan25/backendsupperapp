@@ -1,0 +1,40 @@
+{
+  "name": "kyc-service",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/kyc-service/src",
+  "projectType": "application",
+  "tags": ["type:service", "lang:ts"],
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["^build"],
+      "outputs": ["{projectRoot}/dist"],
+      "options": { "command": "tsc -p tsconfig.app.json", "cwd": "{projectRoot}" }
+    },
+    "serve": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "continuous": true,
+      "options": { "command": "node dist/main.js", "cwd": "{projectRoot}" }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": { "command": "tsc -p tsconfig.json", "cwd": "{projectRoot}" }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": { "command": "eslint src test", "cwd": "{projectRoot}" }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "vitest run --config vitest.config.ts --passWithNoTests",
+        "cwd": "{projectRoot}"
+      }
+    },
+    "test-integration": {
+      "executor": "nx:run-commands",
+      "options": { "command": "vitest run --config vitest.int.config.ts", "cwd": "{projectRoot}" }
+    }
+  }
+}
