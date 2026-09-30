@@ -1,0 +1,11 @@
+packages:
+  - apps/*
+  - libs/*
+  - tools/*
+allowBuilds:
+  '@bufbuild/buf': true
+  '@swc/core': true
+  cpu-features: false
+  nx: true
+  protobufjs: true
+  ssh2: false

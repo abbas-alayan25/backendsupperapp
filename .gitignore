@@ -1,0 +1,11 @@
+node_modules
+dist
+coverage
+tmp
+.nx/cache
+.nx/workspace-data
+*.tsbuildinfo
+.env
+.DS_Store
+vite.config.*.timestamp*
+vitest.config.*.timestamp*

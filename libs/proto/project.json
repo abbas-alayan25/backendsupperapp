@@ -1,0 +1,17 @@
+{
+  "name": "proto",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/proto",
+  "projectType": "library",
+  "tags": ["scope:shared", "lang:proto"],
+  "targets": {
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": ["buf lint", "buf format --diff --exit-code"],
+        "parallel": false,
+        "cwd": "{projectRoot}"
+      }
+    }
+  }
+}

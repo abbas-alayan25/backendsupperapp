@@ -1,0 +1,25 @@
+{
+  "name": "infra-tests",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "tools/infra-tests/src",
+  "projectType": "library",
+  "tags": ["scope:tooling", "lang:ts"],
+  "namedInputs": {
+    "infra": ["{workspaceRoot}/infra/docker/**/*"]
+  },
+  "targets": {
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": { "command": "tsc -p tsconfig.json", "cwd": "{projectRoot}" }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": { "command": "eslint .", "cwd": "{projectRoot}" }
+    },
+    "test-integration": {
+      "executor": "nx:run-commands",
+      "inputs": ["default", "infra"],
+      "options": { "command": "vitest run --config vitest.int.config.ts", "cwd": "{projectRoot}" }
+    }
+  }
+}

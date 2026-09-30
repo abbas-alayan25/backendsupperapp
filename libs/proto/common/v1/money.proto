@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+package common.v1;
+
+message Money {
+  int64 amount_minor = 1;
+  string currency = 2;
+}

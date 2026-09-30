@@ -1,0 +1,7 @@
+node_modules
+dist
+coverage
+pnpm-lock.yaml
+.nx
+docs/backend-spec.md
+*.pdf

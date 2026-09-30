@@ -1,0 +1,19 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "rangeStrategy": "pin",
+  "schedule": ["before 6am on monday"],
+  "lockFileMaintenance": { "enabled": true },
+  "postUpdateOptions": ["gomodTidy"],
+  "packageRules": [
+    { "groupName": "nx", "matchPackageNames": ["nx", "@nx/**"] },
+    { "groupName": "nestjs", "matchPackageNames": ["@nestjs/**"] },
+    { "groupName": "opentelemetry", "matchPackageNames": ["@opentelemetry/**"] },
+    { "groupName": "vitest", "matchPackageNames": ["vitest", "@vitest/**", "vite"] },
+    {
+      "groupName": "testcontainers",
+      "matchPackageNames": ["testcontainers", "@testcontainers/**"]
+    },
+    { "groupName": "docker images", "matchDatasources": ["docker"] }
+  ]
+}

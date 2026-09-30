@@ -1,0 +1,21 @@
+{
+  "name": "go-common",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/go/common",
+  "projectType": "library",
+  "tags": ["scope:shared", "lang:go"],
+  "targets": {
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": ["go vet ./...", "test -z \"$(gofmt -l .)\""],
+        "parallel": false,
+        "cwd": "{projectRoot}"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": { "command": "go test -race ./...", "cwd": "{projectRoot}" }
+    }
+  }
+}

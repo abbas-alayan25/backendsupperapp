@@ -1,0 +1,12 @@
+{
+  "name": "@super-app/infra-tests",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "@testcontainers/postgresql": "12.2.0",
+    "@types/pg": "8.23.1",
+    "pg": "8.23.0",
+    "testcontainers": "12.2.0"
+  }
+}
