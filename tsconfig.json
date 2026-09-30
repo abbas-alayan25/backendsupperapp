@@ -8,6 +8,21 @@
       "path": "./libs/nest"
     },
     {
+      "path": "./libs/temporal"
+    },
+    {
+      "path": "./libs/auth"
+    },
+    {
+      "path": "./libs/kafka"
+    },
+    {
+      "path": "./libs/db"
+    },
+    {
+      "path": "./libs/testing"
+    },
+    {
       "path": "./tools/infra-tests"
     },
     {

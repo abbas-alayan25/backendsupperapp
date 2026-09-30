@@ -1,0 +1,25 @@
+{
+  "name": "@super-app/kafka",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "@super-app/source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "dependencies": {
+    "@confluentinc/kafka-javascript": "1.10.1",
+    "@confluentinc/schemaregistry": "1.10.1",
+    "@super-app/common": "workspace:*",
+    "@super-app/db": "workspace:*",
+    "kysely": "0.29.6",
+    "pg": "8.23.0"
+  },
+  "devDependencies": {
+    "@super-app/testing": "workspace:*",
+    "@types/pg": "8.23.1"
+  }
+}

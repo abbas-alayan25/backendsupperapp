@@ -4,6 +4,8 @@ export * from './errors/error-codes.js';
 export * from './errors/error-envelope.js';
 export * from './errors/http-status.js';
 export * from './errors/messages.js';
+export * from './events/topics.js';
+export * from './headers/client-headers.js';
 export * from './i18n/locale.js';
 export * from './ids/uuidv7.js';
 export * from './logging/logger.js';

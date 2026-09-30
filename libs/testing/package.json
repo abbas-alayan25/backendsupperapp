@@ -1,0 +1,24 @@
+{
+  "name": "@super-app/testing",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "@super-app/source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "dependencies": {
+    "@super-app/common": "workspace:*",
+    "@testcontainers/kafka": "12.2.0",
+    "@testcontainers/postgresql": "12.2.0",
+    "@testcontainers/redis": "12.2.0",
+    "pg": "8.23.0",
+    "testcontainers": "12.2.0"
+  },
+  "devDependencies": {
+    "@types/pg": "8.23.1"
+  }
+}
