@@ -1,5 +1,6 @@
 import {
   AppError,
+  PLATFORM_TENANT_ID,
   type Locale,
   isUuid,
   resolveLocale,
@@ -14,6 +15,11 @@ export const REQUEST_ID_HEADER = 'x-request-id';
 export interface TenantContextHookOptions {
   defaultLocale: Locale;
   tenantExemptPaths: readonly string[];
+  platformPathPrefixes?: readonly string[];
+}
+
+export function matchesPrefix(path: string, prefixes: readonly string[]): boolean {
+  return prefixes.some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
 }
 
 function headerValue(value: string | string[] | undefined): string | undefined {
@@ -35,6 +41,13 @@ export function createTenantContextHook(options: TenantContextHookOptions) {
     const path = request.url.split('?')[0] ?? '';
     if (exempt.has(path)) {
       done();
+      return;
+    }
+    if (matchesPrefix(path, options.platformPathPrefixes ?? [])) {
+      runWithContext(
+        { tenantId: PLATFORM_TENANT_ID, requestId: request.id, locale, scope: 'platform' },
+        done,
+      );
       return;
     }
     const tenantId = headerValue(request.headers[TENANT_HEADER]);

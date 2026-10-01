@@ -581,6 +581,31 @@ importers:
         specifier: 0.2.2
         version: 0.2.2
 
+  libs/adapters:
+    dependencies:
+      '@grpc/grpc-js':
+        specifier: 1.14.5
+        version: 1.14.5
+      '@super-app/common':
+        specifier: workspace:*
+        version: link:../common
+      '@super-app/kafka':
+        specifier: workspace:*
+        version: link:../kafka
+      '@super-app/proto':
+        specifier: workspace:*
+        version: link:../proto
+      ioredis:
+        specifier: 6.0.0
+        version: 6.0.0(supports-color@7.2.0)
+      vitest:
+        specifier: 5.0.2
+        version: 5.0.2(@opentelemetry/api@1.9.1)(@types/node@24.19.0)(vite@8.3.1(@types/node@24.19.0)(terser@5.51.2)(yaml@2.9.1))
+    devDependencies:
+      '@super-app/testing':
+        specifier: workspace:*
+        version: link:../testing
+
   libs/auth:
     dependencies:
       '@nestjs/common':
@@ -614,6 +639,12 @@ importers:
 
   libs/common:
     dependencies:
+      ajv:
+        specifier: 8.20.0
+        version: 8.20.0
+      ajv-formats:
+        specifier: 3.0.1
+        version: 3.0.1
       pino:
         specifier: 10.3.1
         version: 10.3.1

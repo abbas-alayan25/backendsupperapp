@@ -5,6 +5,9 @@
       "path": "./libs/common"
     },
     {
+      "path": "./libs/adapters"
+    },
+    {
       "path": "./libs/nest"
     },
     {

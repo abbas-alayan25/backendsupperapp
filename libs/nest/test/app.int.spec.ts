@@ -48,6 +48,7 @@ describe('service app', () => {
     app = await createServiceApp(fixtureModule(logger), {
       logger,
       tenantExemptPaths: ['/health/live'],
+      platformPathPrefixes: ['/platform'],
     });
     await app.init();
     await app.getHttpAdapter().getInstance().ready();
@@ -170,6 +171,20 @@ describe('service app', () => {
     });
     expect(response.statusCode).toBe(400);
     expect(response.json()).toMatchObject({ error: { code: 'VALIDATION_FAILED' } });
+  });
+
+  it('runs platform routes in platform scope without a tenant header', async () => {
+    const response = await inject({ url: '/platform/tenants', withTenant: false });
+    expect(response.statusCode).toBe(200);
+    expect(response.json()).toMatchObject({
+      tenantId: '00000000-0000-0000-0000-000000000000',
+      scope: 'platform',
+    });
+  });
+
+  it('does not treat lookalike prefixes as platform routes', async () => {
+    const response = await inject({ url: '/platformx', withTenant: false });
+    expect(response.statusCode).toBe(403);
   });
 
   it('serves exempt paths without a tenant or context', async () => {

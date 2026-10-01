@@ -21,7 +21,8 @@
     "dev:down": "docker compose down",
     "dev:smoke": "nx run infra-tests:smoke",
     "db:migrate": "nx run-many -t migrate",
-    "dev:seed-vault": "nx run dev-seed:seed-vault"
+    "dev:seed-vault": "nx run dev-seed:seed-vault",
+    "dev:seed": "nx run dev-seed:seed-vault && nx run tenant-service:seed"
   },
   "devDependencies": {
     "@bufbuild/buf": "1.73.0",

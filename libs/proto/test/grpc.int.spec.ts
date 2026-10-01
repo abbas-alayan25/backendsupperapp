@@ -8,6 +8,7 @@ import {
   idempotencyMetadata,
   ledgerV1,
   tenantV1,
+  platformUnary,
   unary,
 } from '../src/index.js';
 
@@ -53,12 +54,20 @@ beforeAll(async () => {
         };
       },
     ),
-    listActiveTenants: unary<tenantV1.ListActiveTenantsRequest, tenantV1.ListActiveTenantsResponse>(
-      () => Promise.reject(new Error('database password leaked here')),
+    listActiveTenants: platformUnary<
+      tenantV1.ListActiveTenantsRequest,
+      tenantV1.ListActiveTenantsResponse
+    >(() =>
+      Promise.resolve({
+        tenants: currentContext()?.scope === 'platform' ? [] : [{} as tenantV1.Tenant],
+      }),
     ),
   });
   server.addService(ledgerV1.LedgerServiceService, {
     getBalance: unary<ledgerV1.GetBalanceRequest, ledgerV1.GetBalanceResponse>(async (request) => {
+      if (request.accountId === 'boom') {
+        throw new Error('database password leaked here');
+      }
       if (request.accountId === 'slow') {
         await new Promise((resolve) => setTimeout(resolve, 500));
       }
@@ -140,13 +149,28 @@ describe('errors', () => {
   });
 
   it('hides unexpected server errors', async () => {
-    const client = createGrpcClient(tenantV1.TenantServiceClient, address);
-    const error = await inContext(() => call(client.listActiveTenants.bind(client), {})).catch(
-      (e: unknown) => e,
-    );
+    const client = createGrpcClient(ledgerV1.LedgerServiceClient, address);
+    const error = await inContext(() =>
+      call<ledgerV1.GetBalanceRequest, ledgerV1.GetBalanceResponse>(
+        client.getBalance.bind(client),
+        {
+          accountId: 'boom',
+        },
+      ),
+    ).catch((e: unknown) => e);
     expect(fromGrpcError(error).code).toBe('INTERNAL_ERROR');
     expect(String((error as Error).message)).not.toContain('password');
     client.close();
+  });
+
+  it('serves platform RPCs in platform scope without tenant metadata', async () => {
+    const raw = new tenantV1.TenantServiceClient(address, credentials.createInsecure());
+    const response = await call<
+      tenantV1.ListActiveTenantsRequest,
+      tenantV1.ListActiveTenantsResponse
+    >(raw.listActiveTenants.bind(raw), {});
+    expect(response.tenants).toEqual([]);
+    raw.close();
   });
 });
 

@@ -4,6 +4,7 @@ import { createLogger } from '@super-app/common';
 import {
   GRPC_PORT,
   type GrpcHealthServer,
+  type GrpcServiceBinding,
   startGrpcHealthServer,
 } from '../grpc/grpc-health-server.js';
 import { METRICS_PORT, startTelemetry } from '../observability/telemetry.js';
@@ -15,6 +16,8 @@ export interface RunServiceOptions {
   name: string;
   module: IEntryNestModule;
   env?: NodeJS.ProcessEnv;
+  platformPathPrefixes?: readonly string[];
+  grpcServices?: (app: NestFastifyApplication) => readonly GrpcServiceBinding[];
 }
 
 export interface ServicePorts {
@@ -67,9 +70,15 @@ export async function runService(options: RunServiceOptions): Promise<RunningSer
     metricsPort: ports.metrics,
     traceEndpoint: env.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT,
   });
-  const app = await createServiceApp(options.module, { logger });
+  const app = await createServiceApp(options.module, {
+    logger,
+    platformPathPrefixes: options.platformPathPrefixes ?? [],
+  });
   await listen(app, ports.http);
-  const grpc = await startGrpcHealthServer({ port: ports.grpc });
+  const grpc = await startGrpcHealthServer({
+    port: ports.grpc,
+    services: options.grpcServices?.(app) ?? [],
+  });
   let stopping: Promise<void> | undefined;
   const shutdown = (): Promise<void> => {
     stopping ??= (async () => {

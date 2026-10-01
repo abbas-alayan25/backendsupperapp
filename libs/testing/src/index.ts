@@ -5,3 +5,4 @@ export * from './redis.js';
 export * from './rls.js';
 export * from './temporal.js';
 export * from './tenants.js';
+export * from './vault.js';

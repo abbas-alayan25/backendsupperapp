@@ -9,3 +9,5 @@ libs/proto/src/gen
 libs/proto/gen
 docs/architecture.md
 docs/claude-code-build-prompts.md
+apps/*/src/gen
+apps/*/prisma/migrations/**/*.sql

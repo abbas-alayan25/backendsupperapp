@@ -22,3 +22,5 @@ export * from './pii/key-provider.js';
 export * from './pii/normalize.js';
 export * from './pii/pii-cipher.js';
 export * from './pii/pii-hasher.js';
+export * from './secrets/vault-client.js';
+export * from './tenancy/tenant-profile.js';

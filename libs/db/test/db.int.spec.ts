@@ -413,6 +413,54 @@ describe('outbox writer', () => {
   });
 });
 
+describe('Prisma outbox writer', () => {
+  it('writes the same row shape through a Prisma-style transaction client', async () => {
+    const { default: pgModule } = await import('pg');
+    const client = new pgModule.Client({
+      connectionString: demo.postgres.uri({ user: 'demo_service', password: 'demo-password' }),
+    });
+    await client.connect();
+    try {
+      await client.query('BEGIN');
+      await client.query("SELECT set_config('app.tenant_id', $1, true)", [tenantA]);
+      const tx = {
+        $executeRawUnsafe: async (query: string, ...values: unknown[]) =>
+          (await client.query(query, values)).rowCount ?? 0,
+      };
+      const aggregateId = newId();
+      const id = await new OutboxWriter(SCHEMA, 'prisma-service').writePrisma(tx, {
+        tenantId: tenantA,
+        topic: 'tenancy.tenants',
+        eventType: 'tenant.created',
+        eventVersion: 1,
+        aggregateType: 'tenant',
+        aggregateId,
+        ownerId: tenantA,
+        payload: { code: 'acme-lb' },
+      });
+      await client.query('COMMIT');
+      const row = await withTenant(demo.app, tenantA, (trx) =>
+        trx
+          .withSchema(SCHEMA)
+          .selectFrom('outbox_events')
+          .selectAll()
+          .where('id', '=', id)
+          .executeTakeFirstOrThrow(),
+      );
+      expect(row).toMatchObject({
+        topic: 'tenancy.tenants',
+        event_type: 'tenant.created',
+        producer: 'prisma-service',
+        message_key: `${tenantA}:${tenantA}`,
+        payload: { code: 'acme-lb' },
+        aggregate_id: aggregateId,
+      });
+    } finally {
+      await client.end();
+    }
+  });
+});
+
 describe('insertWithKey', () => {
   const createEvent = (trx: Transaction<DemoTables>, tenantId: string) => async (id: string) => {
     await trx

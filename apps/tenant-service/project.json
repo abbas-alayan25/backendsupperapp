@@ -3,38 +3,134 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "apps/tenant-service/src",
   "projectType": "application",
-  "tags": ["type:service", "lang:ts"],
+  "tags": [
+    "type:service",
+    "lang:ts"
+  ],
   "targets": {
     "build": {
       "executor": "nx:run-commands",
-      "dependsOn": ["^build"],
-      "outputs": ["{projectRoot}/dist"],
-      "options": { "command": "tsc -p tsconfig.app.json", "cwd": "{projectRoot}" }
+      "dependsOn": [
+        "^build",
+        "prisma-generate"
+      ],
+      "outputs": [
+        "{projectRoot}/dist"
+      ],
+      "options": {
+        "command": "tsc -p tsconfig.app.json",
+        "cwd": "{projectRoot}"
+      }
     },
     "serve": {
       "executor": "nx:run-commands",
-      "dependsOn": ["build"],
+      "dependsOn": [
+        "build"
+      ],
       "continuous": true,
-      "options": { "command": "node dist/main.js", "cwd": "{projectRoot}" }
+      "options": {
+        "command": "node dist/main.js",
+        "cwd": "{projectRoot}"
+      }
     },
     "typecheck": {
       "executor": "nx:run-commands",
-      "options": { "command": "tsc -p tsconfig.json", "cwd": "{projectRoot}" }
+      "options": {
+        "command": "tsc -p tsconfig.json",
+        "cwd": "{projectRoot}"
+      },
+      "dependsOn": [
+        "prisma-generate"
+      ]
     },
     "lint": {
       "executor": "nx:run-commands",
-      "options": { "command": "eslint src test", "cwd": "{projectRoot}" }
+      "options": {
+        "command": "eslint src test",
+        "cwd": "{projectRoot}"
+      },
+      "dependsOn": [
+        "prisma-generate"
+      ]
     },
     "test": {
       "executor": "nx:run-commands",
       "options": {
         "command": "vitest run --config vitest.config.ts --passWithNoTests",
         "cwd": "{projectRoot}"
-      }
+      },
+      "dependsOn": [
+        "prisma-generate"
+      ]
     },
     "test-integration": {
       "executor": "nx:run-commands",
-      "options": { "command": "vitest run --config vitest.int.config.ts", "cwd": "{projectRoot}" }
+      "options": {
+        "command": "vitest run --config vitest.int.config.ts",
+        "cwd": "{projectRoot}"
+      },
+      "dependsOn": [
+        "prisma-generate"
+      ]
+    },
+    "prisma-generate": {
+      "executor": "nx:run-commands",
+      "inputs": [
+        "{projectRoot}/prisma/schema.prisma"
+      ],
+      "outputs": [
+        "{projectRoot}/src/gen/prisma"
+      ],
+      "cache": true,
+      "options": {
+        "command": "prisma generate --no-hints",
+        "cwd": "{projectRoot}"
+      }
+    },
+    "migration-sql": {
+      "executor": "nx:run-commands",
+      "dependsOn": [
+        "build"
+      ],
+      "options": {
+        "command": "node dist/db/write-migration.js",
+        "cwd": "{projectRoot}"
+      }
+    },
+    "migrate": {
+      "executor": "nx:run-commands",
+      "dependsOn": [
+        "build"
+      ],
+      "options": {
+        "commands": [
+          "prisma migrate deploy",
+          "node dist/provision-roles.js"
+        ],
+        "parallel": false,
+        "cwd": "{projectRoot}"
+      }
+    },
+    "seed": {
+      "executor": "nx:run-commands",
+      "dependsOn": [
+        "build"
+      ],
+      "options": {
+        "command": "node dist/seed.js",
+        "cwd": "{projectRoot}"
+      }
+    },
+    "relay": {
+      "executor": "nx:run-commands",
+      "dependsOn": [
+        "build"
+      ],
+      "continuous": true,
+      "options": {
+        "command": "node dist/relay.js",
+        "cwd": "{projectRoot}"
+      }
     }
   }
 }

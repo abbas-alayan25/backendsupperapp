@@ -15,6 +15,7 @@ export interface ServiceAppOptions {
   logger: Logger;
   defaultLocale?: Locale;
   tenantExemptPaths?: readonly string[];
+  platformPathPrefixes?: readonly string[];
   bodyLimitBytes?: number;
 }
 
@@ -35,6 +36,7 @@ export async function createServiceApp(
     createTenantContextHook({
       defaultLocale,
       tenantExemptPaths: [...HEALTH_PATHS, ...(options.tenantExemptPaths ?? [])],
+      platformPathPrefixes: options.platformPathPrefixes ?? [],
     }),
   );
   const app = await NestFactory.create<NestFastifyApplication>(rootModule, adapter, {

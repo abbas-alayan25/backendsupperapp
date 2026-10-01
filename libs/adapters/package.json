@@ -1,0 +1,29 @@
+{
+  "name": "@super-app/adapters",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "@super-app/source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./testing": {
+      "@super-app/source": "./src/testing/index.ts",
+      "types": "./dist/testing/index.d.ts",
+      "default": "./dist/testing/index.js"
+    }
+  },
+  "dependencies": {
+    "@grpc/grpc-js": "1.14.5",
+    "@super-app/common": "workspace:*",
+    "@super-app/kafka": "workspace:*",
+    "@super-app/proto": "workspace:*",
+    "ioredis": "6.0.0",
+    "vitest": "5.0.2"
+  },
+  "devDependencies": {
+    "@super-app/testing": "workspace:*"
+  }
+}

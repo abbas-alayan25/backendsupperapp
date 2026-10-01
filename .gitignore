@@ -9,3 +9,4 @@ tmp
 .DS_Store
 vite.config.*.timestamp*
 vitest.config.*.timestamp*
+apps/*/src/gen

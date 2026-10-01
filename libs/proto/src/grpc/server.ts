@@ -2,6 +2,7 @@ import type { Metadata, ServerUnaryCall, sendUnaryData } from '@grpc/grpc-js';
 import {
   AppError,
   DEFAULT_LOCALE,
+  PLATFORM_TENANT_ID,
   type RequestContext,
   isUuid,
   newId,
@@ -45,6 +46,25 @@ export function unary<Req, Res>(handler: UnaryHandler<Req, Res>) {
       callback(toGrpcError(error));
       return;
     }
+    runWithContext(context, () => handler(call.request, call)).then(
+      (response) => {
+        callback(null, response);
+      },
+      (error: unknown) => {
+        callback(toGrpcError(error));
+      },
+    );
+  };
+}
+
+export function platformUnary<Req, Res>(handler: UnaryHandler<Req, Res>) {
+  return (call: ServerUnaryCall<Req, Res>, callback: sendUnaryData<Res>): void => {
+    const context: RequestContext = {
+      tenantId: PLATFORM_TENANT_ID,
+      requestId: first(call.metadata, REQUEST_ID_METADATA) ?? newId(),
+      locale: DEFAULT_LOCALE,
+      scope: 'platform',
+    };
     runWithContext(context, () => handler(call.request, call)).then(
       (response) => {
         callback(null, response);

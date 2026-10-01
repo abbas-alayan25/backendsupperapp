@@ -8,10 +8,15 @@ export interface Actor {
   readonly id: string;
 }
 
+export type ContextScope = 'tenant' | 'platform';
+
+export const PLATFORM_TENANT_ID = '00000000-0000-0000-0000-000000000000';
+
 export interface RequestContext {
   readonly tenantId: string;
   readonly requestId: string;
   readonly locale: Locale;
+  readonly scope?: ContextScope;
   userId?: string;
   deviceId?: string;
   actor?: Actor;
@@ -42,8 +47,23 @@ export function requireContext(): RequestContext {
   return context;
 }
 
+export class PlatformScopeError extends Error {
+  constructor() {
+    super('A tenant-scoped operation was attempted in platform scope');
+    this.name = 'PlatformScopeError';
+  }
+}
+
 export function requireTenantId(): string {
-  return requireContext().tenantId;
+  const context = requireContext();
+  if (context.scope === 'platform') {
+    throw new PlatformScopeError();
+  }
+  return context.tenantId;
+}
+
+export function isPlatformScope(): boolean {
+  return currentContext()?.scope === 'platform';
 }
 
 export function setContextPrincipal(principal: {

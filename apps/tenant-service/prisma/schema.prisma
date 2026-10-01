@@ -1,0 +1,210 @@
+generator client {
+  provider               = "prisma-client"
+  output                 = "../src/gen/prisma"
+  moduleFormat           = "esm"
+  importFileExtension    = "js"
+  generatedFileExtension = "ts"
+}
+
+datasource db {
+  provider = "postgresql"
+  schemas  = ["tenancy"]
+}
+
+model Tenant {
+  id                    String   @id @db.Uuid
+  createdAt             DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt             DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+  version               Int      @default(0)
+  code                  String   @unique(map: "tenants_code_key")
+  legalName             String   @map("legal_name")
+  displayName           String   @map("display_name")
+  country               String   @db.Char(2)
+  status                String
+  deploymentModel       String   @map("deployment_model")
+  region                String
+  currentProfileVersion Int?     @map("current_profile_version")
+
+  profiles    TenantProfile[]
+  adapters    TenantAdapter[]
+  domains     TenantDomain[]
+  deployments TenantDeployment[]
+  apps        TenantApp[]
+  usage       TenantUsageDaily[]
+
+  @@map("tenants")
+  @@schema("tenancy")
+}
+
+model TenantProfile {
+  id             String    @id @db.Uuid
+  tenantId       String    @map("tenant_id") @db.Uuid
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime  @default(now()) @map("updated_at") @db.Timestamptz(6)
+  version        Int       @default(0)
+  profileVersion Int       @map("profile_version")
+  brand          Json
+  market         Json
+  compliance     Json
+  products       Json
+  feesRef        String?   @map("fees_ref")
+  status         String
+  approvedBy     String?   @map("approved_by") @db.Uuid
+  activatedAt    DateTime? @map("activated_at") @db.Timestamptz(6)
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "tenant_profiles_tenant_id_fkey")
+
+  @@unique([tenantId, profileVersion], map: "tenant_profiles_tenant_id_profile_version_key")
+  @@map("tenant_profiles")
+  @@schema("tenancy")
+}
+
+model TenantAdapter {
+  id          String   @id @db.Uuid
+  tenantId    String   @map("tenant_id") @db.Uuid
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+  version     Int      @default(0)
+  partnerType String   @map("partner_type")
+  provider    String
+  priority    Int
+  config      Json     @default("{}")
+  secretRef   String   @map("secret_ref")
+  status      String
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "tenant_adapters_tenant_id_fkey")
+
+  @@unique([tenantId, partnerType, provider], map: "tenant_adapters_tenant_id_partner_type_provider_key")
+  @@map("tenant_adapters")
+  @@schema("tenancy")
+}
+
+model TenantDomain {
+  id        String   @id @db.Uuid
+  tenantId  String   @map("tenant_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+  version   Int      @default(0)
+  domain    String   @unique(map: "tenant_domains_domain_key")
+  kind      String
+  tlsStatus String   @default("PENDING") @map("tls_status")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "tenant_domains_tenant_id_fkey")
+
+  @@map("tenant_domains")
+  @@schema("tenancy")
+}
+
+model TenantDeployment {
+  id            String    @id @db.Uuid
+  tenantId      String    @map("tenant_id") @db.Uuid
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime  @default(now()) @map("updated_at") @db.Timestamptz(6)
+  version       Int       @default(0)
+  environment   String
+  cluster       String
+  region        String
+  appVersion    String    @map("app_version")
+  helmValuesRef String?   @map("helm_values_ref")
+  status        String
+  deployedAt    DateTime? @map("deployed_at") @db.Timestamptz(6)
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "tenant_deployments_tenant_id_fkey")
+
+  @@index([tenantId, environment], map: "tenant_deployments_tenant_id_environment_idx")
+  @@map("tenant_deployments")
+  @@schema("tenancy")
+}
+
+model TenantApp {
+  id                  String   @id @db.Uuid
+  tenantId            String   @map("tenant_id") @db.Uuid
+  createdAt           DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt           DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+  version             Int      @default(0)
+  appType             String   @map("app_type")
+  platform            String
+  bundleId            String   @map("bundle_id")
+  storeAccountRef     String?  @map("store_account_ref")
+  minSupportedVersion String   @map("min_supported_version")
+  latestVersion       String   @map("latest_version")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "tenant_apps_tenant_id_fkey")
+
+  @@unique([tenantId, appType, platform], map: "tenant_apps_tenant_id_app_type_platform_key")
+  @@map("tenant_apps")
+  @@schema("tenancy")
+}
+
+model TenantUsageDaily {
+  id             String   @id @db.Uuid
+  tenantId       String   @map("tenant_id") @db.Uuid
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+  version        Int      @default(0)
+  usageDate      DateTime @map("usage_date") @db.Date
+  activeUsers    Int      @default(0) @map("active_users")
+  txnCount       Int      @default(0) @map("txn_count")
+  txnVolumeMinor BigInt   @default(0) @map("txn_volume_minor")
+  currency       String   @db.Char(3)
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "tenant_usage_daily_tenant_id_fkey")
+
+  @@unique([tenantId, usageDate, currency], map: "tenant_usage_daily_tenant_id_usage_date_currency_key")
+  @@map("tenant_usage_daily")
+  @@schema("tenancy")
+}
+
+model OutboxEvent {
+  id            String    @id @db.Uuid
+  tenantId      String    @map("tenant_id") @db.Uuid
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  aggregateType String    @map("aggregate_type")
+  aggregateId   String    @map("aggregate_id") @db.Uuid
+  eventType     String    @map("event_type")
+  eventVersion  Int       @map("event_version")
+  producer      String
+  topic         String
+  messageKey    String    @map("message_key")
+  payload       Json
+  headers       Json      @default("{}")
+  publishedAt   DateTime? @map("published_at") @db.Timestamptz(6)
+
+  @@index([createdAt], map: "outbox_events_created_at_idx")
+  @@index([tenantId, publishedAt], map: "outbox_events_tenant_id_published_at_idx")
+  @@map("outbox_events")
+  @@schema("tenancy")
+}
+
+model IdempotencyKey {
+  id           String    @id @db.Uuid
+  tenantId     String    @map("tenant_id") @db.Uuid
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  key          String
+  actorType    String    @map("actor_type")
+  actorId      String    @map("actor_id")
+  requestHash  String    @map("request_hash")
+  responseCode Int?      @map("response_code")
+  responseBody Json?     @map("response_body")
+  lockedUntil  DateTime? @map("locked_until") @db.Timestamptz(6)
+  expiresAt    DateTime  @map("expires_at") @db.Timestamptz(6)
+
+  @@unique([tenantId, key], map: "idempotency_keys_tenant_id_key_key")
+  @@index([tenantId, expiresAt], map: "idempotency_keys_tenant_id_expires_at_idx")
+  @@map("idempotency_keys")
+  @@schema("tenancy")
+}
+
+model InboxEvent {
+  id          String   @id @db.Uuid
+  tenantId    String   @map("tenant_id") @db.Uuid
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  eventId     String   @map("event_id") @db.Uuid
+  topic       String
+  processedAt DateTime @default(now()) @map("processed_at") @db.Timestamptz(6)
+
+  @@unique([tenantId, eventId], map: "inbox_events_tenant_id_event_id_key")
+  @@index([tenantId, processedAt], map: "inbox_events_tenant_id_processed_at_idx")
+  @@map("inbox_events")
+  @@schema("tenancy")
+}

@@ -29,6 +29,11 @@ class FixtureController {
     throw new Error('password=hunter2 at db.internal:5432');
   }
 
+  @Get('platform/tenants')
+  platform(): Record<string, unknown> {
+    return { ...currentContext() };
+  }
+
   @Get('health/live')
   live(): { status: string; tenantId: string | null } {
     return { status: 'ok', tenantId: currentContext()?.tenantId ?? null };
