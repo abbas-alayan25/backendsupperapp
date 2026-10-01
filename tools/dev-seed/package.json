@@ -1,0 +1,9 @@
+{
+  "name": "@super-app/dev-seed",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "testcontainers": "12.2.0"
+  }
+}

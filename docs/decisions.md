@@ -193,11 +193,24 @@ On 2026-09-30 the owner delegated the remaining M2 follow-ups ("do the best from
 - `docs/events.md` is approved as drafted, including the _(proposed)_ event types.
 - New event types are added there first, in the same convention, before code emits them.
 
-### Q50 — Merchant request signatures — DECIDED (delegated)
+### Q50 — Merchant request signatures — DECIDED (owner override, 2026-10-01) — SPEC AMENDMENT
 
-- Spec §9 gives the signed parts (`method + path + timestamp + sha256(body)`) but not their encoding. The signed string is `METHOD\nPATH_WITH_QUERY\nUNIX_SECONDS\nsha256_hex(raw body)`, signed with HMAC-SHA256 as lowercase hex. `X-Timestamp` is Unix seconds, with a 300-second skew window.
-- `api_keys` stores only `key_hash`, and the server can verify an HMAC only if it knows the signing key. So the signing key is `sha256_hex(api key)`, which is the `key_hash`, and the client derives it from its API key.
-- **Risk for the owner to accept or change:** anyone who can read `api_keys.key_hash` can forge merchant signatures. The alternative is to store the signing secret encrypted in a new column, which the spec does not have.
+The delegated decision (signing key = `sha256(api key)`) is **overridden and must not be used**.
+
+- **Key parts:** an API key has a public key id (`key_prefix`, e.g. `pk_live_xxxx`, sent as `X-Key-Id`) and a secret shown to the merchant once, at creation.
+- **Spec amendment to `admin.api_keys`:**
+  - add `secret_enc bytea NOT NULL`: the secret, envelope-encrypted with the tenant's KMS key (Vault transit locally)
+  - `key_hash` becomes `HMAC-SHA256(secret, server pepper)` and is used only for rotation checks, never for verification
+- **Verification:**
+  1. Look up the key by `X-Key-Id`.
+  2. Decrypt the secret in memory.
+  3. Verify the HMAC over the canonical string below.
+  4. Never log or cache the plaintext secret beyond the request.
+- **Rotation:** up to two secrets are active per key. A request is valid if it verifies against either.
+  - Storage (approved 2026-10-01): `secret_previous_enc bytea NULL` and `secret_previous_expires_at timestamptz NULL`.
+  - The previous secret stops being accepted at `secret_previous_expires_at`.
+- **Canonical string (unchanged):** `METHOD\nPATH_WITH_QUERY\nUNIX_SECONDS\nsha256_hex(raw body)`, signed with HMAC-SHA256 as lowercase hex, with a 300-second skew window.
+- **Code impact:** `libs/auth` no longer derives a signing key from the API key. `ApiKeyResolver` returns the decrypted active secret(s), and verification accepts any of them.
 
 ## M2 build decisions (2026-09-30)
 
@@ -216,3 +229,17 @@ On 2026-09-30 the owner delegated the remaining M2 follow-ups ("do the best from
 | Kafka client            | `@confluentinc/kafka-javascript` (Confluent's official client) and `@confluentinc/schemaregistry`; Avro encoding with `avsc` in the Confluent wire format. KafkaJS is no longer maintained.                                                                                                                                                                         |
 | Generated code          | `buf generate` writes TypeScript (`ts-proto`, `int64` as `bigint`) to `libs/proto/src/gen` and Go to `libs/proto/gen/go`. Both are committed and excluded from lint, formatting and the no-comments check.                                                                                                                                                          |
 | Go imports              | goimports treats `superapp/...` as the local prefix, so local imports form the last import group.                                                                                                                                                                                                                                                                   |
+
+## Owner approvals (2026-10-01)
+
+The owner approved the following ("approve and go ahead").
+
+| Item                    | Decision                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Tenant profile schema   | `libs/common/tenant-profile.schema.json` is approved as drafted: blocks `brand`, `market`, `compliance`, `products`, `adapters`, `deployment`. Tenant identity and status stay in `tenancy.tenants`.                                                                                                                                                                                                                                                 |
+| Q58 — profile storage   | The console edits the full profile document. `tenant_profiles` stores `brand`, `market`, `compliance` and `products`. Activating a profile version projects `adapters` into `tenant_adapters`, and `deployment` into `tenants.deployment_model/region`, `tenant_domains` and `tenant_deployments`, in the same transaction.                                                                                                                          |
+| Q50 rotation storage    | `api_keys.secret_previous_enc` and `api_keys.secret_previous_expires_at` are approved.                                                                                                                                                                                                                                                                                                                                                               |
+| Adapters                | `docs/adapters.md` signatures are approved.                                                                                                                                                                                                                                                                                                                                                                                                          |
+| Q51–Q57 — adapter gaps  | Approved additions: `BankAdapter.createVirtualAccount(userId, options: { ownerType, currency })`, `CardIssuerAdapter.getPinSession(processorCardToken)`, `CardIssuerAdapter.handleEvent(payload, signature)`, `KycProviderAdapter.createLivenessSession(providerApplicantId)`, `AcquirerAdapter.createTokenizationSession(customerRef)`, `BillerAdapter.handleWebhook(payload, signature)` and `MessagingAdapter.handleWebhook(payload, signature)`. |
+| Q59 — replay protection | Merchant API calls must send `X-Request-Id`. It is kept in Redis at `t:{tid}:rl:nonce:{keyId}:{requestId}` for 5 minutes, and a repeat is rejected with `DUPLICATE_REQUEST`.                                                                                                                                                                                                                                                                         |
+| Q39–Q49                 | The delegated decisions are confirmed.                                                                                                                                                                                                                                                                                                                                                                                                               |

@@ -16,10 +16,6 @@ export type SignatureCheck =
       readonly reason: 'TIMESTAMP_INVALID' | 'TIMESTAMP_SKEW' | 'SIGNATURE_MISMATCH';
     };
 
-export function signingKeyFromApiKey(apiKey: string): string {
-  return sha256Hex(apiKey);
-}
-
 export function canonicalSignatureString(input: SignatureInput): string {
   return [
     input.method.toUpperCase(),
@@ -29,12 +25,12 @@ export function canonicalSignatureString(input: SignatureInput): string {
   ].join('\n');
 }
 
-export function signMerchantRequest(signingKey: string, input: SignatureInput): string {
-  return hmacSha256Hex(signingKey, canonicalSignatureString(input));
+export function signMerchantRequest(secret: string, input: SignatureInput): string {
+  return hmacSha256Hex(secret, canonicalSignatureString(input));
 }
 
 export function verifyMerchantSignature(
-  signingKey: string,
+  secrets: string | readonly string[],
   input: SignatureInput,
   signature: string,
   now: Date = new Date(),
@@ -46,8 +42,10 @@ export function verifyMerchantSignature(
   if (skew > SIGNATURE_MAX_SKEW_SECONDS) {
     return { valid: false, reason: 'TIMESTAMP_SKEW' };
   }
-  const expected = signMerchantRequest(signingKey, input);
-  return constantTimeEqualHex(expected, signature.toLowerCase())
-    ? { valid: true }
-    : { valid: false, reason: 'SIGNATURE_MISMATCH' };
+  const candidates = typeof secrets === 'string' ? [secrets] : secrets;
+  const provided = signature.toLowerCase();
+  const matched = candidates.some((secret) =>
+    constantTimeEqualHex(signMerchantRequest(secret, input), provided),
+  );
+  return matched ? { valid: true } : { valid: false, reason: 'SIGNATURE_MISMATCH' };
 }

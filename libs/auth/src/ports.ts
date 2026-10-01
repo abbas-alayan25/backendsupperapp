@@ -19,7 +19,7 @@ export interface ResolvedApiKey {
   readonly apiKeyId: string;
   readonly ownerType: 'MERCHANT' | 'TENANT';
   readonly ownerId: string;
-  readonly signingKey: string;
+  readonly secrets: readonly string[];
   readonly scopes: readonly string[];
   readonly ipAllowlist: readonly string[];
 }

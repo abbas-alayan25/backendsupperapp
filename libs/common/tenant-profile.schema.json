@@ -1,0 +1,443 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.superapp.internal/tenant-profile/v1.json",
+  "title": "Tenant profile",
+  "description": "Versioned configuration of one tenant (architecture section 3). Tenant identity and status live in tenancy.tenants; the profile version lives in tenancy.tenant_profiles.profile_version.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["brand", "market", "compliance", "products", "adapters", "deployment"],
+  "properties": {
+    "brand": { "$ref": "#/$defs/brand" },
+    "market": { "$ref": "#/$defs/market" },
+    "compliance": { "$ref": "#/$defs/compliance" },
+    "products": { "$ref": "#/$defs/products" },
+    "adapters": { "$ref": "#/$defs/adapters" },
+    "deployment": { "$ref": "#/$defs/deployment" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "products": { "properties": { "cards": { "const": true } } } } },
+      "then": { "properties": { "adapters": { "required": ["cardIssuer"] } } }
+    },
+    {
+      "if": { "properties": { "products": { "properties": { "bills": { "const": true } } } } },
+      "then": { "properties": { "adapters": { "required": ["billers"] } } }
+    },
+    {
+      "if": { "properties": { "products": { "properties": { "wallet": { "const": true } } } } },
+      "then": { "properties": { "adapters": { "required": ["bank", "kyc", "sms"] } } }
+    }
+  ],
+  "$defs": {
+    "currencyCode": { "type": "string", "pattern": "^[A-Z]{3}$" },
+    "countryCode": { "type": "string", "pattern": "^[A-Z]{2}$" },
+    "locale": { "enum": ["ar", "en"] },
+    "decimalAmount": { "type": "string", "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]+)?$" },
+    "money": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["amount", "currency"],
+      "properties": {
+        "amount": { "$ref": "#/$defs/decimalAmount" },
+        "currency": { "$ref": "#/$defs/currencyCode" }
+      }
+    },
+    "providerId": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$", "maxLength": 64 },
+    "kycTierNumber": { "type": "integer", "minimum": 0, "maximum": 3 },
+    "localizedText": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["en", "ar"],
+      "properties": {
+        "en": { "type": "string", "minLength": 1, "maxLength": 500 },
+        "ar": { "type": "string", "minLength": 1, "maxLength": 500 }
+      }
+    },
+    "brand": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "themeTokens", "supportEmail"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "themeTokens": { "type": "string", "pattern": "^(s3|https)://\\S+$" },
+        "supportEmail": { "type": "string", "format": "email" },
+        "supportPhone": { "type": "string", "pattern": "^\\+[1-9][0-9]{6,14}$" },
+        "privacyPolicyUrl": { "type": "string", "pattern": "^https://\\S+$" },
+        "termsUrl": { "type": "string", "pattern": "^https://\\S+$" },
+        "storeListing": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "appName": { "$ref": "#/$defs/localizedText" },
+            "shortDescription": { "$ref": "#/$defs/localizedText" }
+          }
+        }
+      }
+    },
+    "market": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "country",
+        "currencies",
+        "defaultCurrency",
+        "locales",
+        "defaultLocale",
+        "timeZone",
+        "phone"
+      ],
+      "properties": {
+        "country": { "$ref": "#/$defs/countryCode" },
+        "currencies": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/currencyCode" }
+        },
+        "defaultCurrency": { "$ref": "#/$defs/currencyCode" },
+        "locales": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/locale" }
+        },
+        "defaultLocale": { "$ref": "#/$defs/locale" },
+        "timeZone": { "type": "string", "pattern": "^(UTC|[A-Za-z]+(/[A-Za-z0-9_+-]+)+)$" },
+        "phone": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["countryCallingCode"],
+          "properties": {
+            "countryCallingCode": { "type": "string", "pattern": "^\\+[1-9][0-9]{0,3}$" },
+            "nationalNumberPattern": { "type": "string", "format": "regex" }
+          }
+        },
+        "nationalIdPattern": { "type": "string", "format": "regex" }
+      }
+    },
+    "documentType": {
+      "enum": [
+        "NATIONAL_ID",
+        "PASSPORT",
+        "DRIVING_LICENCE",
+        "RESIDENCE_PERMIT",
+        "PROOF_OF_ADDRESS",
+        "SELFIE",
+        "LIVENESS_VIDEO"
+      ]
+    },
+    "checkType": {
+      "enum": [
+        "OCR",
+        "AUTHENTICITY",
+        "LIVENESS",
+        "FACE_MATCH",
+        "SANCTIONS",
+        "PEP",
+        "ADVERSE_MEDIA",
+        "ADDRESS"
+      ]
+    },
+    "kycField": {
+      "enum": [
+        "FULL_NAME",
+        "DOB",
+        "NATIONALITY",
+        "ID_NUMBER",
+        "ADDRESS",
+        "OCCUPATION",
+        "SOURCE_OF_FUNDS"
+      ]
+    },
+    "limitService": {
+      "enum": ["P2P", "TOPUP", "WITHDRAWAL", "BILL", "QR", "CARD", "CASH_OUT", "ALL"]
+    },
+    "limitPeriod": { "enum": ["PER_TXN", "DAILY", "MONTHLY"] },
+    "limit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["service", "period", "currency"],
+      "anyOf": [{ "required": ["maxAmount"] }, { "required": ["maxCount"] }],
+      "properties": {
+        "service": { "$ref": "#/$defs/limitService" },
+        "period": { "$ref": "#/$defs/limitPeriod" },
+        "currency": { "$ref": "#/$defs/currencyCode" },
+        "maxAmount": { "$ref": "#/$defs/decimalAmount" },
+        "maxCount": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "kycTier": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tier", "requiredFields", "requiredDocuments", "requiredChecks", "limits"],
+      "properties": {
+        "tier": { "$ref": "#/$defs/kycTierNumber" },
+        "requiresTier": { "$ref": "#/$defs/kycTierNumber" },
+        "requiredFields": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/kycField" }
+        },
+        "requiredDocuments": {
+          "description": "Every entry must be satisfied; within an entry any one of the listed document types is enough.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["anyOf"],
+            "properties": {
+              "anyOf": {
+                "type": "array",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": { "$ref": "#/$defs/documentType" }
+              },
+              "sides": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": { "enum": ["FRONT", "BACK"] }
+              }
+            }
+          }
+        },
+        "requiredChecks": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/checkType" }
+        },
+        "balanceCaps": { "type": "array", "items": { "$ref": "#/$defs/money" } },
+        "limits": { "type": "array", "items": { "$ref": "#/$defs/limit" } }
+      }
+    },
+    "makerCheckerThreshold": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["actionType", "minApprovers"],
+      "properties": {
+        "actionType": { "type": "string", "pattern": "^[a-z]+(\\.[a-z_]+)+$" },
+        "minApprovers": { "type": "integer", "minimum": 1, "maximum": 3 },
+        "amountThreshold": { "$ref": "#/$defs/money" },
+        "secondApproverAbove": { "$ref": "#/$defs/money" }
+      }
+    },
+    "compliance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["regulator", "kycTiers", "cardIssuance", "retentionYears", "makerChecker"],
+      "properties": {
+        "regulator": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
+        "kycTiers": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 4,
+          "items": { "$ref": "#/$defs/kycTier" }
+        },
+        "cardIssuance": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["virtualMinTier", "physicalMinTier"],
+          "properties": {
+            "virtualMinTier": { "$ref": "#/$defs/kycTierNumber", "default": 1 },
+            "physicalMinTier": { "$ref": "#/$defs/kycTierNumber", "default": 2 }
+          }
+        },
+        "retentionYears": { "type": "integer", "minimum": 1, "maximum": 30 },
+        "screeningLists": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "enum": ["UN", "OFAC", "EU", "UK", "LOCAL"] }
+        },
+        "newDeviceCooling": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["hours", "outgoingThresholds"],
+          "properties": {
+            "hours": { "type": "integer", "minimum": 0, "maximum": 168, "default": 24 },
+            "outgoingThresholds": { "type": "array", "items": { "$ref": "#/$defs/money" } }
+          }
+        },
+        "makerChecker": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["approvalExpiryHours", "thresholds"],
+          "properties": {
+            "approvalExpiryHours": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 168,
+              "default": 24
+            },
+            "thresholds": { "type": "array", "items": { "$ref": "#/$defs/makerCheckerThreshold" } }
+          }
+        }
+      }
+    },
+    "products": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["wallet", "cards", "marketplace", "bills", "riders", "cashAgents"],
+      "properties": {
+        "wallet": { "type": "boolean" },
+        "cards": { "type": "boolean" },
+        "marketplace": { "type": "boolean" },
+        "bills": { "type": "boolean" },
+        "riders": { "type": "boolean" },
+        "cashAgents": { "type": "boolean" }
+      }
+    },
+    "adapters": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "bank": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/providerId" }
+        },
+        "cardIssuer": { "$ref": "#/$defs/providerId" },
+        "kyc": { "$ref": "#/$defs/providerId" },
+        "acquirer": { "$ref": "#/$defs/providerId" },
+        "billers": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/providerId" }
+        },
+        "sms": { "$ref": "#/$defs/providerId" },
+        "email": { "$ref": "#/$defs/providerId" },
+        "push": { "$ref": "#/$defs/providerId" }
+      }
+    },
+    "deployment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["model", "region", "domain", "version"],
+      "properties": {
+        "model": { "enum": ["SHARED", "DEDICATED"] },
+        "region": { "type": "string", "pattern": "^[a-z]{2}(-[a-z]+)+-[0-9]$" },
+        "domain": { "type": "string", "format": "hostname" },
+        "version": { "type": "string", "pattern": "^[0-9]{4}\\.[0-9]{1,2}\\.[0-9]+$" }
+      }
+    }
+  },
+  "examples": [
+    {
+      "brand": {
+        "name": "Acme Pay",
+        "themeTokens": "s3://brand/acme/tokens.json",
+        "supportEmail": "support@acmepay.example",
+        "supportPhone": "+9611234567"
+      },
+      "market": {
+        "country": "LB",
+        "currencies": ["USD", "LBP"],
+        "defaultCurrency": "USD",
+        "locales": ["ar", "en"],
+        "defaultLocale": "ar",
+        "timeZone": "Asia/Beirut",
+        "phone": { "countryCallingCode": "+961" }
+      },
+      "compliance": {
+        "regulator": "central-bank-lb",
+        "kycTiers": [
+          {
+            "tier": 0,
+            "requiredFields": [],
+            "requiredDocuments": [],
+            "requiredChecks": [],
+            "balanceCaps": [{ "amount": "200.00", "currency": "USD" }],
+            "limits": [
+              { "service": "P2P", "period": "PER_TXN", "currency": "USD", "maxAmount": "0" },
+              { "service": "TOPUP", "period": "DAILY", "currency": "USD", "maxAmount": "200.00" }
+            ]
+          },
+          {
+            "tier": 1,
+            "requiresTier": 0,
+            "requiredFields": ["FULL_NAME", "DOB"],
+            "requiredDocuments": [
+              { "anyOf": ["NATIONAL_ID", "PASSPORT"], "sides": ["FRONT", "BACK"] },
+              { "anyOf": ["SELFIE"] }
+            ],
+            "requiredChecks": ["OCR", "AUTHENTICITY", "LIVENESS", "FACE_MATCH", "SANCTIONS"],
+            "limits": [
+              { "service": "P2P", "period": "PER_TXN", "currency": "USD", "maxAmount": "500.00" },
+              {
+                "service": "P2P",
+                "period": "DAILY",
+                "currency": "USD",
+                "maxAmount": "1000.00",
+                "maxCount": 20
+              },
+              { "service": "ALL", "period": "MONTHLY", "currency": "USD", "maxAmount": "5000.00" }
+            ]
+          },
+          {
+            "tier": 2,
+            "requiresTier": 1,
+            "requiredFields": ["ADDRESS"],
+            "requiredDocuments": [{ "anyOf": ["PROOF_OF_ADDRESS"] }],
+            "requiredChecks": ["ADDRESS", "PEP"],
+            "limits": [
+              {
+                "service": "WITHDRAWAL",
+                "period": "DAILY",
+                "currency": "USD",
+                "maxAmount": "5000.00"
+              },
+              { "service": "ALL", "period": "MONTHLY", "currency": "USD", "maxAmount": "25000.00" }
+            ]
+          }
+        ],
+        "cardIssuance": { "virtualMinTier": 1, "physicalMinTier": 2 },
+        "retentionYears": 5,
+        "screeningLists": ["UN", "OFAC", "EU", "LOCAL"],
+        "newDeviceCooling": {
+          "hours": 24,
+          "outgoingThresholds": [{ "amount": "100.00", "currency": "USD" }]
+        },
+        "makerChecker": {
+          "approvalExpiryHours": 24,
+          "thresholds": [
+            { "actionType": "users.freeze", "minApprovers": 1 },
+            {
+              "actionType": "transactions.refund",
+              "minApprovers": 1,
+              "amountThreshold": { "amount": "500.00", "currency": "USD" }
+            },
+            {
+              "actionType": "ledger.adjustment",
+              "minApprovers": 1,
+              "secondApproverAbove": { "amount": "10000.00", "currency": "USD" }
+            }
+          ]
+        }
+      },
+      "products": {
+        "wallet": true,
+        "cards": true,
+        "marketplace": false,
+        "bills": true,
+        "riders": false,
+        "cashAgents": false
+      },
+      "adapters": {
+        "bank": ["bank-sim-a", "bank-sim-b"],
+        "cardIssuer": "card-sim",
+        "kyc": "kyc-sim",
+        "acquirer": "acquirer-sim",
+        "billers": ["biller-sim"],
+        "sms": "sms-sim",
+        "email": "email-sim",
+        "push": "push-sim"
+      },
+      "deployment": {
+        "model": "SHARED",
+        "region": "me-central-1",
+        "domain": "api.acmepay.example",
+        "version": "2026.10.1"
+      }
+    }
+  ]
+}

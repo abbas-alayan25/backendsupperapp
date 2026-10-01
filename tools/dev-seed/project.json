@@ -1,0 +1,26 @@
+{
+  "name": "dev-seed",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "tools/dev-seed/src",
+  "projectType": "library",
+  "tags": ["scope:tooling", "lang:ts"],
+  "targets": {
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": { "command": "tsc -p tsconfig.json", "cwd": "{projectRoot}" }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": { "command": "eslint src test", "cwd": "{projectRoot}" }
+    },
+    "test-integration": {
+      "executor": "nx:run-commands",
+      "options": { "command": "vitest run --config vitest.int.config.ts", "cwd": "{projectRoot}" }
+    },
+    "seed-vault": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": { "command": "node src/vault.ts", "cwd": "{projectRoot}" }
+    }
+  }
+}

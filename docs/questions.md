@@ -6,58 +6,67 @@ Status: **Open**, **Partial** (part answered), **Answered** (small answers in th
 
 ## Summary
 
-| ID  | Topic                                                   | Status   | Blocks     |
-| --- | ------------------------------------------------------- | -------- | ---------- |
-| Q1  | Global tables, RLS bypass, cross-schema FK              | Resolved | —          |
-| Q2  | Partitioned tables vs unique keys and PKs               | Resolved | —          |
-| Q3  | Ledger balance sign convention                          | Open     | M6         |
-| Q4  | Go in the monorepo, ledger data layer                   | Partial  | M6         |
-| Q5  | Home for NestJS bootstrap                               | Answered | —          |
-| Q6  | Event type names and payloads                           | Partial  | M2         |
-| Q7  | Outbox routing to topic and key                         | Resolved | —          |
-| Q8  | gRPC message shapes                                     | Answered | —          |
-| Q9  | Tenant header from the gateway                          | Answered | —          |
-| Q10 | HTTP status per error code                              | Answered | —          |
-| Q11 | PII crypto                                              | Answered | —          |
-| Q12 | Idempotency scope and semantics                         | Resolved | —          |
-| Q13 | BFF and schema ownership                                | Partial  | M20, M21   |
-| Q14 | Auth parameters                                         | Partial  | M5         |
-| Q15 | Tenant profile JSON shapes                              | Open     | M3         |
-| Q16 | Device binding and JWKS                                 | Open     | M5         |
-| Q17 | Merchant staff and rider identity                       | Open     | M5, M18    |
-| Q18 | Partial and incremental hold capture                    | Partial  | M6, M15    |
-| Q19 | Who runs `holds.expire`                                 | Open     | M6         |
-| Q20 | Infra provisioning, app builds, deployments             | Answered | —          |
-| Q21 | Who writes `tenant_usage_daily`                         | Open     | M21        |
-| Q22 | `/me/close` balance check                               | Open     | M5         |
-| Q23 | Wallet id in ledger events                              | Open     | M6, M14    |
-| Q24 | OpenSearch indexer and loyalty consumer                 | Partial  | M16        |
-| Q25 | Missing admin tables (notes, settings)                  | Open     | M20        |
-| Q26 | Platform-level maker-checker                            | Open     | M21        |
-| Q27 | Push token ownership                                    | Open     | M14        |
-| Q28 | `/contacts/match` ownership                             | Open     | M7         |
-| Q29 | Risk rule expression format                             | Partial  | M8         |
-| Q30 | KYC tier source of truth                                | Partial  | M9         |
-| Q31 | Cash-out code table                                     | Open     | M11        |
-| Q32 | Missing merchant tables                                 | Open     | M18        |
-| Q33 | Webhook tenant path secret                              | Open     | M4         |
-| Q34 | Error code for unexpected errors                        | Answered | —          |
-| Q35 | Architecture document referenced by the prompts         | Partial  | M2, M3     |
-| Q36 | New-device cooling-period flag has no column            | Open     | M5         |
-| Q37 | Kong JWT validation vs service JWT validation           | Open     | M4         |
-| Q38 | Event naming convention beyond tenancy                  | Resolved | —          |
-| Q39 | Cross-schema `tenant_id` FK, dedicated tenant databases | Open     | M2         |
-| Q40 | Tables that declare their own primary key               | Open     | M2         |
-| Q41 | Runtime writes to global tables                         | Open     | M2, M3, M8 |
-| Q42 | PLATFORM-scoped rows in other admin tables              | Open     | M20, M21   |
-| Q43 | Source of envelope `version`, `producer`, `traceId`     | Open     | M2         |
-| Q44 | Avro schemas through the Debezium outbox relay          | Open     | M2         |
-| Q45 | gRPC metadata key for idempotency                       | Open     | M2         |
-| Q46 | Actor columns on `idempotency_keys`                     | Open     | M2         |
-| Q47 | `notify.inbox` topic missing from §15                   | Open     | M2, M14    |
-| Q48 | `delivery.locations` producer has no outbox             | Open     | M14        |
-| Q49 | Topic and consumers for KYB decisions                   | Open     | M9, M16    |
-| Q50 | Merchant signature encoding and signing key             | Resolved | —          |
+| ID  | Topic                                                                    | Status   | Blocks     |
+| --- | ------------------------------------------------------------------------ | -------- | ---------- |
+| Q1  | Global tables, RLS bypass, cross-schema FK                               | Resolved | —          |
+| Q2  | Partitioned tables vs unique keys and PKs                                | Resolved | —          |
+| Q3  | Ledger balance sign convention                                           | Open     | M6         |
+| Q4  | Go in the monorepo, ledger data layer                                    | Partial  | M6         |
+| Q5  | Home for NestJS bootstrap                                                | Answered | —          |
+| Q6  | Event type names and payloads                                            | Partial  | M2         |
+| Q7  | Outbox routing to topic and key                                          | Resolved | —          |
+| Q8  | gRPC message shapes                                                      | Answered | —          |
+| Q9  | Tenant header from the gateway                                           | Answered | —          |
+| Q10 | HTTP status per error code                                               | Answered | —          |
+| Q11 | PII crypto                                                               | Answered | —          |
+| Q12 | Idempotency scope and semantics                                          | Resolved | —          |
+| Q13 | BFF and schema ownership                                                 | Partial  | M20, M21   |
+| Q14 | Auth parameters                                                          | Partial  | M5         |
+| Q15 | Tenant profile JSON shapes                                               | Open     | M3         |
+| Q16 | Device binding and JWKS                                                  | Open     | M5         |
+| Q17 | Merchant staff and rider identity                                        | Open     | M5, M18    |
+| Q18 | Partial and incremental hold capture                                     | Partial  | M6, M15    |
+| Q19 | Who runs `holds.expire`                                                  | Open     | M6         |
+| Q20 | Infra provisioning, app builds, deployments                              | Answered | —          |
+| Q21 | Who writes `tenant_usage_daily`                                          | Open     | M21        |
+| Q22 | `/me/close` balance check                                                | Open     | M5         |
+| Q23 | Wallet id in ledger events                                               | Open     | M6, M14    |
+| Q24 | OpenSearch indexer and loyalty consumer                                  | Partial  | M16        |
+| Q25 | Missing admin tables (notes, settings)                                   | Open     | M20        |
+| Q26 | Platform-level maker-checker                                             | Open     | M21        |
+| Q27 | Push token ownership                                                     | Open     | M14        |
+| Q28 | `/contacts/match` ownership                                              | Open     | M7         |
+| Q29 | Risk rule expression format                                              | Partial  | M8         |
+| Q30 | KYC tier source of truth                                                 | Partial  | M9         |
+| Q31 | Cash-out code table                                                      | Open     | M11        |
+| Q32 | Missing merchant tables                                                  | Open     | M18        |
+| Q33 | Webhook tenant path secret                                               | Open     | M4         |
+| Q34 | Error code for unexpected errors                                         | Answered | —          |
+| Q35 | Architecture document referenced by the prompts                          | Resolved | —          |
+| Q36 | New-device cooling-period flag has no column                             | Partial  | M5         |
+| Q37 | Kong JWT validation vs service JWT validation                            | Open     | M4         |
+| Q38 | Event naming convention beyond tenancy                                   | Resolved | —          |
+| Q39 | Cross-schema `tenant_id` FK, dedicated tenant databases                  | Open     | M2         |
+| Q40 | Tables that declare their own primary key                                | Open     | M2         |
+| Q41 | Runtime writes to global tables                                          | Open     | M2, M3, M8 |
+| Q42 | PLATFORM-scoped rows in other admin tables                               | Open     | M20, M21   |
+| Q43 | Source of envelope `version`, `producer`, `traceId`                      | Open     | M2         |
+| Q44 | Avro schemas through the Debezium outbox relay                           | Open     | M2         |
+| Q45 | gRPC metadata key for idempotency                                        | Open     | M2         |
+| Q46 | Actor columns on `idempotency_keys`                                      | Open     | M2         |
+| Q47 | `notify.inbox` topic missing from §15                                    | Open     | M2, M14    |
+| Q48 | `delivery.locations` producer has no outbox                              | Open     | M14        |
+| Q49 | Topic and consumers for KYB decisions                                    | Open     | M9, M16    |
+| Q50 | Merchant signature encoding and signing key                              | Resolved | —          |
+| Q51 | BankAdapter.createVirtualAccount lacks currency and owner type           | Open     | M12        |
+| Q52 | No CardIssuerAdapter method for PIN sessions                             | Open     | M15        |
+| Q53 | No CardIssuerAdapter method for general card events and settlement files | Open     | M15        |
+| Q54 | No KycProviderAdapter method for liveness sessions                       | Open     | M9         |
+| Q55 | No AcquirerAdapter method for tokenization sessions                      | Open     | M11        |
+| Q56 | BillerAdapter has no handleWebhook                                       | Open     | M13        |
+| Q57 | MessagingAdapter has no handleWebhook                                    | Open     | M14        |
+| Q58 | Storage of the profile's adapters and deployment blocks                  | Open     | M3         |
+| Q59 | Replay protection for signed requests (timestamp + nonce)                | Open     | M4, M18    |
 
 ## Data model and tenancy
 
@@ -91,7 +100,7 @@ Status: **Open**, **Partial** (part answered), **Answered** (small answers in th
 - **Q23.** `wallet.balance_updated` needs `walletId`, but its source `ledger.entries` knows only the ledger `account_id`. Should ledger events carry `owner_type/owner_id`, or should the gateway map accounts to wallets?
 - **Q29.** Partial: Prompt 8 calls for a JSON rule expression engine with named conditions and actions. Still open: the exact JSON grammar (JSONLogic or a custom tree).
 - **Q33.** §13 resolves the webhook tenant "from the webhook domain or a tenant-scoped path secret", but the path is `/webhooks/{partnerType}/{provider}` with no secret segment. What is the path format?
-- **Q35. Architecture document — PARTIAL.** Decided: it lives at `docs/architecture.md`, `docs/backend-spec.md` wins on implementation details, and conflicts are listed here. Still open: the file is not in the repository (checked 2026-09-30), so the conflict review and the adapter interface methods for M3 are waiting on it.
+- **Q35 — RESOLVED.** `docs/architecture.md` is in the repo (2026-10-01). Its conflicts with the spec are listed under "Architecture vs spec" below; the spec wins on implementation details.
 - **Q38. — RESOLVED.** Owner's answer recorded in `docs/decisions.md` (Q38). The full catalogue is drafted in `docs/events.md` for review.
 
 ## API behaviour and security
@@ -127,7 +136,37 @@ Status: **Open**, **Partial** (part answered), **Answered** (small answers in th
 - **Q48 — RESOLVED (delegated; see `docs/decisions.md`).** `delivery.locations` has no outbox.** §15 makes realtime-gateway the producer of `delivery.locations`, but the gateway owns no database schema, so it cannot use the transactional outbox. Allow a direct idempotent producer for this one telemetry topic?
 - **Q49 — RESOLVED (delegated; see `docs/decisions.md`).** KYB decisions.** §15 lists no topic for business (KYB) decisions, and marketplace-service is not a consumer of `kyc.applications`, yet merchants become active after KYB approval. Publish `business.approved` / `business.rejected` on `kyc.applications` and add marketplace-service as a consumer?
 
-- **Q50 — RESOLVED (delegated; see `docs/decisions.md`).** `api_keys` has only `key_hash`, but HMAC verification needs the signing key on the server. The signing key is `sha256(api key)`. The owner should confirm the risk noted in the decision.
+- **Q50 — RESOLVED (owner override, spec amendment).** `api_keys.secret_enc` holds the envelope-encrypted secret, `key_hash` is a peppered HMAC used for rotation checks, and two secrets can be active during rotation. See `docs/decisions.md`.
+
+## Architecture vs spec (Q35 review, 2026-10-01)
+
+`docs/backend-spec.md` wins on implementation details, so most of these need no action. They are listed so nobody builds from the architecture's version by mistake.
+
+| Topic               | Architecture says                                                                                                                                                                           | Spec / decision we follow                                                                                                                        |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Tenant id           | Strings like `acme-lb` in the profile and event envelope                                                                                                                                    | `tenant_id` is a UUID; `acme-lb` is `tenants.code`                                                                                               |
+| Topic names         | `<domain>.<entity>.v1`; breaking changes get a new topic                                                                                                                                    | §15 names without a version suffix; schemas evolve backward-compatibly (Q38)                                                                     |
+| Event types         | `kyc.tier_changed`, `ledger.entry_posted`, `ledger.hold_created`, `bank.credit_received`, `card.authorization_decided`, `order.status_changed`, `risk.alert_raised`, …                      | The owner's Q38 convention in `docs/events.md` (`kyc_tier.changed`, `ledger_entry.posted`, `hold.created`, …)                                    |
+| Table names         | `kyb_businesses`, `kyb_ubos`, `limits`, `blocklists`, `recon_matches`, `bill_payments` in payments, `payouts` in marketplace                                                                | §4–§8 names and owners (`businesses`, `business_ubos`, `limit_rules`, `blocklist_entries`, …)                                                    |
+| Endpoints           | `/auth/pin`, `/kyc/submissions`, `/kyc/documents/upload-url`, `/payments/qr`, `/cards/{id}/provision`, `/billers/{id}/fields`, rider `PATCH /deliveries/{id}/status`, `/webhooks/{partner}` | §10–§13 paths (`/auth/pin/change`, `/kyc/applications`, `/payments/qr/pay`, `/cards/{id}/provisioning`, `/webhooks/{partnerType}/{provider}`, …) |
+| SDUI statuses       | `DRAFT → PENDING_APPROVAL → PUBLISHED → ARCHIVED`                                                                                                                                           | §8 also has `SCHEDULED`                                                                                                                          |
+| Idempotency scope   | Required on POSTs that move money or create resources                                                                                                                                       | Owner's Q12: required only when money moves or is held                                                                                           |
+| Mobile tenant claim | Signed `X-Tenant-Id` claim in the app token                                                                                                                                                 | JWT `tid` claim plus the gateway's `X-Tenant-Id` header, which must match (Q9)                                                                   |
+
+**Useful details from the architecture that the spec lacks (adopted):**
+
+- Card holds expire after 7 days by default, configurable per MCC (M6, M15).
+- Virtual cards need tier ≥ 1 and physical cards tier ≥ 2 by default (in the profile schema).
+- A new device gets a 24-hour cooling period on outgoing transfers above a threshold (profile `compliance.newDeviceCooling`; partly answers Q36).
+- PINs are 6 digits (Q14).
+- Maker-checker requests expire after 24 hours by default, with the architecture's default action list.
+- SLO: ledger posting p99 < 100 ms.
+
+## New questions (2026-10-01) — all resolved; see Owner approvals in `docs/decisions.md`
+
+- **Q51–Q57. Adapter gaps.** Spec features with no method in the §3 interfaces: virtual account currency/owner (A1), PIN sessions (A2), general card events and settlement files (A3), KYC liveness sessions (A4), acquirer tokenization sessions (A5), biller and messaging webhooks (A6, A7). Details are in `docs/adapters.md`. My suggestion: add the methods (`getPinSession`, `handleEvent`, `createLivenessSession`, `createTokenizationSession`, `handleWebhook` on BillerAdapter and MessagingAdapter, and a `currency` + owner parameter on `createVirtualAccount`).
+- **Q58. Where the profile's `adapters` and `deployment` blocks live.** `tenant_profiles` has only `brand`, `market`, `compliance`, `products` and `fees_ref` columns. Adapters are rows in `tenant_adapters`; deployment is `tenants.deployment_model/region`, `tenant_domains` and `tenant_deployments`. My suggestion: the console edits the full profile document (validated by the schema), and activating a profile version projects `adapters` and `deployment` into those tables in the same transaction. Their history stays reconstructable from the outbox events `tenant.adapter_changed` / `tenant.profile_changed`.
+- **Q59. Replay protection for signed requests.** Architecture §14 asks for "replay protection by timestamp + nonce"; spec §9 gives only a 5-minute timestamp skew. My suggestion: require `X-Request-Id` on merchant API calls and keep it in Redis (`t:{tid}:rl:nonce:{keyId}:{requestId}`) for 5 minutes, rejecting repeats with `DUPLICATE_REQUEST`.
 
 ## Answered
 

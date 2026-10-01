@@ -270,6 +270,21 @@ services:
       timeout: 5s
       retries: 30
 
+  vault:
+    image: hashicorp/vault:2.1.1
+    command: ['server', '-dev', '-dev-listen-address=0.0.0.0:8200']
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: ${VAULT_DEV_ROOT_TOKEN:-superapp-dev-root}
+    cap_add:
+      - IPC_LOCK
+    ports:
+      - '${VAULT_PORT:-8200}:8200'
+    healthcheck:
+      test: ['CMD', 'vault', 'status', '-address=http://127.0.0.1:8200']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
 volumes:
   postgres-data:
   redis-data:

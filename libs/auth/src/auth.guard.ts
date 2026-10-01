@@ -164,7 +164,7 @@ export class AuthGuard implements CanActivate {
       throw new AppError('UNAUTHENTICATED', { reason: 'UNKNOWN_API_KEY' });
     }
     const check = verifyMerchantSignature(
-      apiKey.signingKey,
+      apiKey.secrets,
       { method: request.method, pathWithQuery: request.url, timestamp, rawBody: request.rawBody },
       signature,
       this.clock?.() ?? new Date(),
@@ -175,7 +175,7 @@ export class AuthGuard implements CanActivate {
     if (!ipAllowed(request.ip, apiKey.ipAllowlist)) {
       throw new AppError('FORBIDDEN', { reason: 'IP_NOT_ALLOWED' });
     }
-    request.principal = { kind: 'api-key', apiKey };
+    request.principal = { kind: 'api-key', apiKey: { ...apiKey, secrets: [] } };
     setContextPrincipal({ actor: { type: 'API_KEY', id: apiKey.apiKeyId } });
   }
 

@@ -17,10 +17,11 @@
     "format:check": "prettier --check .",
     "check:versions": "node tools/scripts/check-exact-versions.mjs",
     "check:comments": "node tools/scripts/check-no-comments.mjs",
-    "dev:up": "docker compose up -d --wait --wait-timeout 600",
+    "dev:up": "docker compose up -d --wait --wait-timeout 600 && nx run dev-seed:seed-vault",
     "dev:down": "docker compose down",
     "dev:smoke": "nx run infra-tests:smoke",
-    "db:migrate": "nx run-many -t migrate"
+    "db:migrate": "nx run-many -t migrate",
+    "dev:seed-vault": "nx run dev-seed:seed-vault"
   },
   "devDependencies": {
     "@bufbuild/buf": "1.73.0",

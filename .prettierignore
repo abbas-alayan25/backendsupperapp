@@ -7,3 +7,5 @@ docs/backend-spec.md
 *.pdf
 libs/proto/src/gen
 libs/proto/gen
+docs/architecture.md
+docs/claude-code-build-prompts.md

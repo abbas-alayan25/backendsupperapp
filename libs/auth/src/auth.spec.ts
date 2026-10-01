@@ -6,7 +6,6 @@ import { stepUpRequestHash } from './hashing.js';
 import {
   canonicalSignatureString,
   signMerchantRequest,
-  signingKeyFromApiKey,
   verifyMerchantSignature,
 } from './merchant-signature.js';
 import { JwtSigner, JwtVerifier } from './tokens.js';
@@ -121,7 +120,7 @@ describe('step-up request hash', () => {
 });
 
 describe('merchant signatures', () => {
-  const key = signingKeyFromApiKey('sk_live_secret');
+  const key = 'sk_live_secret';
   const now = new Date('2026-09-30T12:00:00Z');
   const input = {
     method: 'POST',
@@ -147,10 +146,23 @@ describe('merchant signatures', () => {
       valid: false,
       reason: 'SIGNATURE_MISMATCH',
     });
-    expect(
-      verifyMerchantSignature(signingKeyFromApiKey('other'), input, signature, now).valid,
-    ).toBe(false);
+    expect(verifyMerchantSignature('other-secret', input, signature, now).valid).toBe(false);
     expect(verifyMerchantSignature(key, input, 'zz', now).valid).toBe(false);
+  });
+
+  it('accepts either secret while a key is being rotated', () => {
+    const previous = signMerchantRequest('old-secret', input);
+    const current = signMerchantRequest('new-secret', input);
+    expect(verifyMerchantSignature(['new-secret', 'old-secret'], input, previous, now).valid).toBe(
+      true,
+    );
+    expect(verifyMerchantSignature(['new-secret', 'old-secret'], input, current, now).valid).toBe(
+      true,
+    );
+    expect(verifyMerchantSignature(['new-secret'], input, previous, now)).toEqual({
+      valid: false,
+      reason: 'SIGNATURE_MISMATCH',
+    });
   });
 
   it('enforces the 5-minute skew and numeric timestamps', () => {

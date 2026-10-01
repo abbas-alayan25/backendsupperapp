@@ -90,6 +90,9 @@
     },
     {
       "path": "./libs/proto"
+    },
+    {
+      "path": "./tools/dev-seed"
     }
   ]
 }

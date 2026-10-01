@@ -16,7 +16,6 @@ import {
   type StepUpVerification,
   type TokenClaims,
   signMerchantRequest,
-  signingKeyFromApiKey,
   stepUpRequestHash,
 } from '../src/index.js';
 
@@ -100,7 +99,7 @@ const apiKey: ResolvedApiKey = {
   apiKeyId: 'key-1',
   ownerType: 'MERCHANT',
   ownerId: 'merchant-1',
-  signingKey: signingKeyFromApiKey(API_KEY),
+  secrets: [API_KEY],
   scopes: [],
   ipAllowlist: [],
 };
@@ -306,7 +305,7 @@ describe('merchant API keys', () => {
   ) => ({
     'x-key-id': 'pk_1',
     'x-timestamp': timestamp,
-    'x-signature': signMerchantRequest(apiKey.signingKey, {
+    'x-signature': signMerchantRequest(API_KEY, {
       method: 'POST',
       pathWithQuery: '/merchant/refunds',
       timestamp,
